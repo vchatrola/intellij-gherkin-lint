@@ -1,18 +1,43 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.vchatrola.intellijgherkinlint</id>
-    <name>intellij-gherkin-lint</name>
-    <vendor>vchatrola</vendor>
+    <id>com.vchatrola.gherkinlint</id>
+    <name>GherkinLint</name>
+    <vendor email="vchatrola@outlook.com" url="https://yourcompany.com">Vivek Chatrola</vendor>
+
+    <description><![CDATA[
+    <b>GherkinLint: Validate Your BDD Feature Files (IntelliJ Plugin)</b><br/>
+    Write high-quality & consistent BDD features with GherkinLint.
+    Leveraging powerful language models, it validates syntax, suggests improvements, and boosts maintainability.
+    Save time, improve readability, and strengthen BDD automation.
+]]></description>
 
     <depends>com.intellij.modules.platform</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.vchatrola.intellijgherkinlint.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.vchatrola.plugin.toolWindow.MyToolWindowFactory"
+                    id="GherkinLint"
+                    secondary="true"
+                    canCloseContents="true"
+                    anchor="bottom"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.vchatrola.intellijgherkinlint.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+    <!-- Register services -->
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- This ensures MyPluginService is recognized and initialized -->
+        <applicationService
+                serviceInterface="com.vchatrola.plugin.service.MyPluginService"
+                serviceImplementation="com.vchatrola.plugin.service.MyPluginServiceImpl"/>
+    </extensions>
+
+    <actions>
+        <action id="Validate.Gherkin.Action"
+                class="com.vchatrola.plugin.action.GherkinValidationAction"
+                text="Validate Gherkin"
+                description="Analyzes the selected Gherkin text for syntax errors and best practices.">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
 </idea-plugin>

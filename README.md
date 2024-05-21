@@ -1,5 +1,5 @@
+<!-- Plugin description -->
 # GherkinLint: Validate Your BDD Feature Files (IntelliJ Plugin)
-<!-- Plugin description --> 
 *GherkinLint* is an IntelliJ plugin that empowers you to write high-quality and consistent BDD feature files in Gherkin. It leverages the capabilities of Gemini, a large language model, to perform comprehensive grammar validation based on established standards.
 
 ## Features:

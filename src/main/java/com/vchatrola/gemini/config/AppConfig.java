@@ -6,16 +6,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @Configuration
 @ComponentScan(basePackages = "com.vchatrola.gemini")
+@PropertySource("classpath:application.properties")
 public class AppConfig {
 
     @Bean
-    public RestClient geminiRestClient(@Value("https://generativelanguage.googleapis.com") String baseUrl,
+    public RestClient geminiRestClient(@Value("${gemini.baseurl}") String baseUrl,
                                        @Value("${google.api.key}") String apiKey) {
         return RestClient.builder()
                 .baseUrl(baseUrl)
