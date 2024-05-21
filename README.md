@@ -1,44 +1,36 @@
-# intellij-gherkin-lint
+# GherkinLint: Validate Your BDD Feature Files (IntelliJ Plugin)
 
-![Build](https://github.com/vchatrola/intellij-gherkin-lint/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+*GherkinLint* is an IntelliJ plugin that empowers you to write high-quality and consistent BDD feature files in Gherkin. It leverages the capabilities of Gemini, a large language model, to perform comprehensive grammar validation based on established standards.
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [pluginGroup](./gradle.properties), [plugin ID](./src/main/resources/META-INF/plugin.xml) and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin description in `README` (see [Tips][docs:plugin-description])
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `PLUGIN_ID` in the above README badges.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+## Features:
 
-<!-- Plugin description -->
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
+- **Effortless Validation:** Lint your Gherkin syntax for accuracy and identify potential issues with ease.
+- **Actionable Insights:** Receive targeted suggestions for improvement based on best practices.
+- **Enhanced Maintainability:** Boost the readability and maintainability of your feature files.
+- **Confidence in Automation:** Strengthen your faith in the reliability of your BDD automation suite.
 
-This specific section is a source for the [plugin.xml](/src/main/resources/META-INF/plugin.xml) file which will be extracted by the [Gradle](/build.gradle.kts) during the build process.
+## Benefits:
 
-To keep everything working, do not remove `<!-- ... -->` sections. 
-<!-- Plugin description end -->
+- **Early Error Detection:** Save valuable time and effort by catching errors early in the development cycle.
+- **Clean & Consistent Gherkin:** Craft cleaner and more consistent Gherkin syntax.
+- **Improved Readability:** Ensure your feature files are well-structured and easy to understand for everyone involved.
 
-## Installation
+## Getting Started:
 
-- Using the IDE built-in plugin system:
-  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "intellij-gherkin-lint"</kbd> >
-  <kbd>Install</kbd>
-  
-- Manually:
+1. Install GherkinLint from the JetBrains Marketplace.
+2. Select the Gherkin grammar on your feature file.
+3. GherkinLint will automatically analyze the file and highlight any issues.
+4. Review the suggestions and make necessary corrections.
 
-  Download the [latest release](https://github.com/vchatrola/intellij-gherkin-lint/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+## Who Should Use This Plugin?
 
+GherkinLint is a valuable tool for anyone who utilizes BDD frameworks in software development:
 
----
-Plugin based on the [IntelliJ Platform Plugin Template][template].
+- QA Engineers
+- Software Developers
+- Product Managers
+- Business Analysts
 
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+## Contribute to GherkinLint:
+
+We actively encourage contributions from the community! Feel free to fork the repository, fix bugs, add features, or enhance the documentation.
