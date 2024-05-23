@@ -75,8 +75,16 @@ public class GherkinValidationAction extends AnAction {
         }
 
         String firstLine = selectedText.trim().split("\\R")[0].trim();
-        String firstWord = firstLine.split("\\s+")[0];
+        String firstWord = getFirstWordWithOnlyAlphabets(firstLine);
         return PluginConstants.GHERKIN_KEYWORDS.contains(firstWord);
+    }
+
+    private String getFirstWordWithOnlyAlphabets(String text) {
+        String[] words = text.split("\\s+");
+        if (words.length > 0) {
+            return words[0].replaceAll("[^a-zA-Z]", "");
+        }
+        return "";
     }
 
     private void validateGherkinText(String selectedText, ConsoleView consoleView) {
@@ -93,13 +101,32 @@ public class GherkinValidationAction extends AnAction {
             return;
         }
 
-        String textToSend = Prompts.GHERKIN_VALIDATION + "\n" + selectedText;
-        String response = service.getCompletion(textToSend);
+        String prompt = buildPrompt(selectedText);
+        String response = service.getCompletion(prompt);
         if (response != null) {
             consoleView.print(response, ConsoleViewContentType.NORMAL_OUTPUT);
         } else {
             consoleView.print("No response received from the Gemini service.\n", ConsoleViewContentType.ERROR_OUTPUT);
         }
+    }
+
+    private String buildPrompt(String selectedText) {
+        StringBuilder inputText = new StringBuilder(Prompts.CONTEXT);
+        if (selectedText.contains(PluginConstants.KEYWORD_SCENARIO)) {
+            inputText.append(Prompts.SCENARIO);
+        }
+        if (selectedText.contains(PluginConstants.KEYWORD_GIVEN)) {
+            inputText.append(Prompts.GIVEN);
+        }
+        if (selectedText.contains(PluginConstants.KEYWORD_WHEN)) {
+            inputText.append(Prompts.WHEN);
+        }
+        if (selectedText.contains(PluginConstants.KEYWORD_THEN)) {
+            inputText.append(Prompts.THEN);
+        }
+        inputText.append("\n").append(Prompts.OUTPUT_FORMAT)
+                .append("\n").append(String.format(Prompts.LLM_INPUT, selectedText));
+        return inputText.toString();
     }
 
 }
