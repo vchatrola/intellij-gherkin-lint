@@ -16,11 +16,12 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.vchatrola.plugin.toolWindow.MyToolWindowFactory"
+        <toolWindow factoryClass="com.vchatrola.plugin.toolWindow.GherkinLintWindowFactory"
                     id="GherkinLint"
-                    secondary="true"
+                    anchor="bottom"
+                    secondary="false"
                     canCloseContents="true"
-                    anchor="bottom"/>
+                    icon="AllIcons.Actions.Replace"/>
     </extensions>
 
     <!-- Register services -->
@@ -35,6 +36,7 @@
         <action id="Validate.Gherkin.Action"
                 class="com.vchatrola.plugin.action.GherkinValidationAction"
                 text="Validate Gherkin"
+                icon="AllIcons.Actions.Replace"
                 description="Analyzes the selected Gherkin text for syntax errors and best practices.">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>

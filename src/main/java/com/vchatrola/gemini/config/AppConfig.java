@@ -1,5 +1,6 @@
 package com.vchatrola.gemini.config;
 
+import com.vchatrola.common.GherkinLintLogger;
 import com.vchatrola.gemini.api.GeminiInterface;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,18 +20,41 @@ public class AppConfig {
     @Bean
     public RestClient geminiRestClient(@Value("${gemini.baseurl}") String baseUrl,
                                        @Value("${google.api.key}") String apiKey) {
-        return RestClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader("x-goog-api-key", apiKey)
-                .defaultHeader("Content-Type", "application/json")
-                .defaultHeader("Accept", "application/json")
-                .build();
+        try {
+            if (apiKey == null) {
+                GherkinLintLogger.warn("google.api.key property not found. Ensure it's properly configured in the " +
+                        "environment variables.");
+            }
+
+            GherkinLintLogger.info("Creating RestClient with baseUrl: " + baseUrl);
+
+            RestClient restClient = RestClient.builder()
+                    .baseUrl(baseUrl)
+                    .defaultHeader("x-goog-api-key", apiKey)
+                    .defaultHeader("Content-Type", "application/json")
+                    .defaultHeader("Accept", "application/json")
+                    .build();
+
+            GherkinLintLogger.info("RestClient created successfully");
+
+            return restClient;
+        } catch (Exception e) {
+            String errorMessage = "Error occurred while creating RestClient: " + e.getMessage();
+            GherkinLintLogger.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
     }
 
     @Bean
     public GeminiInterface geminiInterface(@Qualifier("geminiRestClient") RestClient client) {
-        RestClientAdapter adapter = RestClientAdapter.create(client);
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
-        return factory.createClient(GeminiInterface.class);
+        try {
+            RestClientAdapter adapter = RestClientAdapter.create(client);
+            HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
+            return factory.createClient(GeminiInterface.class);
+        } catch (Exception e) {
+            String errorMessage = "Error occurred while creating GeminiInterface: " + e.getMessage();
+            GherkinLintLogger.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
     }
 }
