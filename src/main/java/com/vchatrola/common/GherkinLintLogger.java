@@ -4,7 +4,7 @@ package com.vchatrola.common;
 import com.intellij.openapi.diagnostic.Logger;
 
 public class GherkinLintLogger {
-    private static final Logger LOGGER = Logger.getInstance("GherkinLogger");
+    private static final Logger LOGGER = Logger.getInstance("GherkinLintLogger");
 
     private GherkinLintLogger() {
         // Private constructor to prevent instantiation

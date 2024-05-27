@@ -53,7 +53,6 @@ public class GherkinValidationAction extends AnAction {
         validateGherkinText(selectedText, consoleView, event.getProject());
         toolWindow.getContentManager().setSelectedContent(content);
         toolWindow.activate(null);
-        GherkinLintLogger.info("Gherkin text validated and ToolWindow content activated.");
     }
 
     @Override
@@ -63,8 +62,7 @@ public class GherkinValidationAction extends AnAction {
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
 
         // Enable the action if the validation is applicable
-        boolean isApplicable = isValidationApplicable(caret, psiFile);
-        event.getPresentation().setEnabledAndVisible(isApplicable);
+        event.getPresentation().setEnabledAndVisible(isValidationApplicable(caret, psiFile));
     }
 
     @Override
@@ -78,7 +76,7 @@ public class GherkinValidationAction extends AnAction {
         }
 
         String fileExtension = psiFile.getFileType().getDefaultExtension();
-        if (!PluginConstants.SUPPORTED_FILE_EXTENSIONS.contains(fileExtension)) {
+        if (!PluginConstants.SUPPORTED_EXTENSIONS.contains(fileExtension)) {
             GherkinLintLogger.info("Validation is not applicable: Unsupported file extension: " + fileExtension);
             return false;
         }
@@ -110,77 +108,123 @@ public class GherkinValidationAction extends AnAction {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Validating gherkin text") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
+                String response;
                 try {
                     indicator.setText("Validating Gherkin...");
 
-                    GeminiService service = getGeminiService(consoleView);
-                    String response = service.getCompletion(prompt);
-                    if (StringUtils.isBlank(response)) {
-                        GherkinLintLogger.error(PluginConstants.ERROR_MESSAGE_NO_RESPONSE);
-                        consoleView.print(PluginConstants.ERROR_MESSAGE_NO_RESPONSE, ConsoleViewContentType.ERROR_OUTPUT);
+                    GeminiService service = getGeminiService();
+                    if (service == null) {
+                        reportError(consoleView, PluginConstants.GEMINI_SERVICE_ACCESS_ERROR, null);
                         return;
                     }
 
-                    // Update UI thread with the response (using SwingUtilities.invokeLater)
+                    response = service.getCompletion(prompt);
+                    GherkinLintLogger.debug("Original Gemini response: " + response);
+                    if (StringUtils.isBlank(response)) {
+                        reportError(consoleView, PluginConstants.NO_GEMINI_SERVICE_RESPONSE_ERROR,
+                                "Gemini response is blank or null.");
+                        return;
+                    }
+
                     String finalResponse = GherkinOutputParser.parseOutput(response);
-                    SwingUtilities.invokeLater(() -> {
-                        consoleView.print(finalResponse, ConsoleViewContentType.NORMAL_OUTPUT);
-                        indicator.setText("Validation complete"); //TODO - DEBUG
-                    });
+                    if (StringUtils.isBlank(finalResponse)) {
+                        reportError(consoleView, PluginConstants.UNKNOWN_ERROR,
+                                "Parsed Gemini response is blank or null.");
+                        return;
+                    }
+
+                    handleValidResponseAsync(indicator, finalResponse, consoleView);
                 } catch (Exception ex) {
-                    GherkinLintLogger.error(PluginConstants.ERROR_MESSAGE_VALIDATION, ex);
-                    consoleView.print(PluginConstants.ERROR_MESSAGE_VALIDATION, ConsoleViewContentType.ERROR_OUTPUT);
+                    reportError(consoleView, PluginConstants.UNKNOWN_ERROR, ex.getMessage());
                 }
             }
         });
     }
 
+    private void handleValidResponseAsync(@NotNull ProgressIndicator indicator, String finalResponse, ConsoleView consoleView) {
+        SwingUtilities.invokeLater(() -> {
+            GherkinLintLogger.debug("Attempting to print final response to console view.");
+            try {
+                printStyledOutput(finalResponse, consoleView);
+                indicator.setText("Validation complete");
+                GherkinLintLogger.info("Gherkin text validated and ToolWindow content activated.");
+            } catch (Exception ex) {
+                reportError(consoleView, PluginConstants.CONSOLE_OUTPUT_PRINT_FAILURE,
+                        "Consider investigating EDT issues.");
+            }
+        });
+    }
+
+    private static void printStyledOutput(String output, ConsoleView consoleView) {
+        String[] lines = output.split("\\n");
+
+        for (String line : lines) {
+            String[] parts = line.split("\\|", 2);
+            switch (parts[0]) {
+                case "Title":
+                    consoleView.print(parts[1] + "\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+                    break;
+                case "Status":
+                case "Reason":
+                case "Suggestion":
+                    consoleView.print(String.format("- %-10s: ", parts[0]), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                    ConsoleViewContentType contentType = ("Valid").equals(parts[1]) ? ConsoleViewContentType.USER_INPUT
+                            : ("Invalid").equals(parts[1]) ? ConsoleViewContentType.ERROR_OUTPUT
+                            : ConsoleViewContentType.NORMAL_OUTPUT;
+                    consoleView.print(parts[1] + "\n", contentType);
+                    break;
+                default:
+                    consoleView.print(line + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            }
+        }
+    }
+
+    private void reportError(ConsoleView consoleView, String errorMessage, @Nullable String additionalInfo) {
+        GherkinLintLogger.error(errorMessage + (additionalInfo != null ? ": " + additionalInfo : ""));
+        consoleView.print(errorMessage, ConsoleViewContentType.ERROR_OUTPUT);
+    }
+
     private boolean isEmptyOrInvalidText(String text, ConsoleView consoleView) {
         if (text == null || text.trim().isEmpty()) {
-            consoleView.print(PluginConstants.ERROR_MESSAGE_NO_GHERKIN_TEXT_SELECTED + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+            reportError(consoleView, PluginConstants.NO_GHERKIN_TEXT_SELECTED_ERROR, null);
             return true;
         }
         return false;
     }
 
     private boolean isTooShort(String text, ConsoleView consoleView) {
-        if (text.trim().split("\\s+").length < 3) {
-            consoleView.print(PluginConstants.ERROR_MESSAGE_GHERKIN_TEXT_TOO_SHORT + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        if (text.trim().split("\\s+").length < 4) {
+            reportError(consoleView, PluginConstants.GHERKIN_TEXT_TOO_SHORT_ERROR, null);
             return true;
         }
         return false;
     }
 
     private boolean startsWithAndKeyword(String text, ConsoleView consoleView) {
-        if (StringUtils.equalsAnyIgnoreCase(PluginConstants.KEYWORD_AND, PluginUtils.getFirstWordOnlyAlphabets(text))) {
-            consoleView.print(PluginConstants.ERROR_MESSAGE_GHERKIN_AND_NO_CONTEXT + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        if (StringUtils.equalsAnyIgnoreCase(PluginConstants.AND_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))) {
+            reportError(consoleView, PluginConstants.GHERKIN_AND_NO_CONTEXT_ERROR, null);
             return true;
         }
         return false;
     }
 
-    private GeminiService getGeminiService(ConsoleView consoleView) {
+    private GeminiService getGeminiService() {
         MyPluginServiceImpl myPluginServiceImpl = ApplicationManager.getApplication().getService(MyPluginServiceImpl.class);
-        GeminiService service = myPluginServiceImpl.getGeminiService();
-        if (service == null) {
-            consoleView.print("Error: Unable to access GeminiService. Please ensure the service is properly " +
-                    "configured and try again.\n", ConsoleViewContentType.ERROR_OUTPUT);
-        }
-        return service;
+        return myPluginServiceImpl.getGeminiService();
     }
 
     private String buildPrompt(String selectedText) {
         StringBuilder inputText = new StringBuilder(Prompts.CONTEXT);
-        if (selectedText.contains(PluginConstants.KEYWORD_SCENARIO)) {
+        if (selectedText.contains(PluginConstants.SCENARIO_KEYWORD)) {
             inputText.append(Prompts.SCENARIO);
         }
-        if (selectedText.contains(PluginConstants.KEYWORD_GIVEN)) {
+        if (selectedText.contains(PluginConstants.GIVEN_KEYWORD)) {
             inputText.append(Prompts.GIVEN);
         }
-        if (selectedText.contains(PluginConstants.KEYWORD_WHEN)) {
+        if (selectedText.contains(PluginConstants.WHEN_KEYWORD)) {
             inputText.append(Prompts.WHEN);
         }
-        if (selectedText.contains(PluginConstants.KEYWORD_THEN)) {
+        if (selectedText.contains(PluginConstants.THEN_KEYWORD)) {
             inputText.append(Prompts.THEN);
         }
         inputText.append(Prompts.OUTPUT_FORMAT_JSON).append(String.format(Prompts.LLM_INPUT, selectedText));

@@ -151,34 +151,43 @@ public class Prompts {
 
             """;
 
-    public static final String OUTPUT_FORMAT_JSON = "The output for the Gherkin validation report must be in valid JSON format, parsable by standard Java JSON parsing libraries like Jackson or Gson.\n\n" +
+    public static final String OUTPUT_FORMAT_JSON =
             "**Validation Report Format (JSON Structure):**\n" +
-            "\n" +
-            "{\n" +
-            "  \"scenarios\": [\n" +
-            "    {  // Include only if the scenario starts with \"Scenario:\"\n" +
-            "      \"title\": \"[Scenario title]\", (Required)\n" +
-            "      \"status\": \"Valid/Invalid\", (Required)\n" +
-            "      \"reason\": \"[Brief explanation]\", (Required)\n" +
-            "      \"suggestion\": \"[Corrected title if invalid or confirmation/suggestion if valid]\", (Required)\n" +
-            "      \"steps\": [  // Include only if there are steps in the scenario\n" +
-            "        { \n" +
-            "          \"text\": \"[Step Text]\", (Required)\n" +
-            "          \"status\": \"Valid/Invalid\", (Required)\n" +
-            "          \"reason\": \"[Brief explanation]\", (Required)\n" +
-            "          \"suggestion\": \"Corrected title if invalid or confirmation/suggestion if valid]\", (Required)\n" +
-            "        },\n" +
-            "        // ... more steps within the scenario (if present)\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    // ... more scenarios (if present)\n" +
-            "  ]\n" +
-            "}\n" +
-            "\n" +
-            "**Important Notes:**\n" +
-            "* Do not output anything other than the JSON data representing the validation report.\n" +
-            "* Include scenarios and steps in the output only if they are present in the given Gherkin input data.\n" +
-            "* All elements within a scenario or step section are mandatory except for the \"suggestion\" field.\n" +
-            "* The \"status\" field should strictly contain either \"Valid\" or \"Invalid\".";
+                    "The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax. These objects should be parsable by standard Java JSON parsing libraries like Jackson or Gson.\n\n" +
+
+                    "Each object will have the following properties:\n\n" +
+                    "- **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And steps, it should be the actual step text.\n\n" +
+                    "- **status (string, required):** Must be either \"Valid\" or \"Invalid\", indicating the validation result for the line.\n\n" +
+                    "- **reason (string, required):** A brief explanation for why the line is invalid. Use \"NA\" for valid lines.\n\n" +
+                    "- **suggestion (string, required):**\n" +
+                    "  - For invalid lines: Provide the corrected title of the line following the given standards.\n" +
+                    "  - For valid lines:\n" +
+                    "    - \"Valid syntax\": Indicates the line adheres to the Gherkin syntax.\n" +
+                    "    - \"Consider refactoring\": Suggests potential improvements to the line, even though it's syntactically valid (e.g., clearer wording, better keyword usage).\n" +
+                    "    - \"[Specific suggestion]\": Offers a tailored suggestion for improvement (e.g., \"Replace 'then' with 'and' for a better flow\").\n\n" +
+
+                    "**Example:**\n\n" +
+
+                    "```json\n" +
+                    "[\n" +
+                    "  {\n" +
+                    "    \"title\": \"Scenario: Search Morningstar Indexes with valid parameters\",\n" +
+                    "    \"status\": \"Valid\",\n" +
+                    "    \"reason\": \"\",\n" +
+                    "    \"suggestion\": \"\"\n" +
+                    "  },\n" +
+                    "  {\n" +
+                    "    \"title\": \"Given an user is navigated to the morningstar index page\",\n" +
+                    "    \"status\": \"Invalid\",\n" +
+                    "    \"reason\": \"Missing 'a' before 'user',\n" +
+                    "    \"suggestion\": \"Given a user is navigated to the morningstar index page\"\n" +
+                    "  }\n" +
+                    "  // ... more validation results for other lines ...\n" +
+                    "]\n" +
+                    "```\n\n" +
+
+                    "**Important Notes:**\n\n" +
+                    "- Ensure the output strictly adheres to the provided JSON structure.\n\n" +
+                    "- The \"status\" field should strictly contain either \"Valid\" or \"Invalid\".\n";
 
 }

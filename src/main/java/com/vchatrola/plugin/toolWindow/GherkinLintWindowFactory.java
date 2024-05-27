@@ -18,8 +18,9 @@ public class GherkinLintWindowFactory implements ToolWindowFactory {
         try {
             // Ensure this code runs on the Event Dispatch Thread
             JPanel contentPanel = new JPanel(new BorderLayout());
-            JLabel label = new JLabel(PluginConstants.TOOL_WINDOW_DEFAULT_MESSAGE);
+            JLabel label = new JLabel(PluginConstants.DEFAULT_TOOL_WINDOW_TEXT);
             label.setForeground(UIManager.getColor("textInactiveText")); // Set text color to lighter shade
+            contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
             contentPanel.add(label, BorderLayout.CENTER);
             toolWindow.getComponent().add(contentPanel);
             GherkinLintLogger.info("Tool window content created successfully.");
