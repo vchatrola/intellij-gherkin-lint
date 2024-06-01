@@ -42,7 +42,7 @@ public class GeminiService {
     }
 
     public GeminiResponse getCompletion(GeminiRequest request) {
-        return geminiInterface.getCompletion(GEMINI_PRO, request);
+        return geminiInterface.getCompletion(GEMINI_1_5_PRO, request);
     }
 
     public GeminiResponse getCompletionWithModel(String model, GeminiRequest request) {

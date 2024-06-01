@@ -19,6 +19,12 @@ public class PluginConstants {
     public static final String WHEN_KEYWORD = "When";
     public static final String THEN_KEYWORD = "Then";
     public static final String AND_KEYWORD = "And";
+    public static final String PROPERTY_TITLE = "Title";
+    public static final String PROPERTY_STATUS = "Status";
+    public static final String PROPERTY_REASON = "Reason";
+    public static final String PROPERTY_SUGGESTION = "Suggestion";
+    public static final String STATUS_VALID = "Valid";
+    public static final String STATUS_INVALID = "Invalid";
     public static final String DEFAULT_TOOL_WINDOW_TEXT = "Select Gherkin text and right-click to validate.";
     public static final String NO_GHERKIN_TEXT_SELECTED_ERROR = "No Gherkin text selected for validation. Please select " +
             "some text containing a Gherkin statement and try again.";

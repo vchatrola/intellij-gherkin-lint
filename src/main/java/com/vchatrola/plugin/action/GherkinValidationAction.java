@@ -157,24 +157,30 @@ public class GherkinValidationAction extends AnAction {
 
     private static void printStyledOutput(String output, ConsoleView consoleView) {
         String[] lines = output.split("\\n");
+        int minPadding = PluginConstants.PROPERTY_SUGGESTION.length();
 
         for (String line : lines) {
             String[] parts = line.split("\\|", 2);
-            switch (parts[0]) {
-                case "Title":
-                    consoleView.print(parts[1] + "\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            String property = parts[0];
+            String value = (parts.length > 1) ? parts[1] : "";
+
+            switch (property) {
+                case PluginConstants.PROPERTY_TITLE:
+                    consoleView.print(value + "\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
                     break;
-                case "Status":
-                case "Reason":
-                case "Suggestion":
-                    consoleView.print(String.format("- %-10s: ", parts[0]), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-                    ConsoleViewContentType contentType = ("Valid").equals(parts[1]) ? ConsoleViewContentType.USER_INPUT
-                            : ("Invalid").equals(parts[1]) ? ConsoleViewContentType.ERROR_OUTPUT
-                            : ConsoleViewContentType.NORMAL_OUTPUT;
-                    consoleView.print(parts[1] + "\n", contentType);
+                case PluginConstants.PROPERTY_STATUS:
+                case PluginConstants.PROPERTY_REASON:
+                case PluginConstants.PROPERTY_SUGGESTION:
+                    consoleView.print(String.format("- %-" + minPadding + "s: ", property), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                    ConsoleViewContentType contentType =
+                            (PluginConstants.STATUS_VALID).equals(value) ? ConsoleViewContentType.USER_INPUT
+                                    : (PluginConstants.STATUS_INVALID).equals(value) ? ConsoleViewContentType.ERROR_OUTPUT
+                                    : ConsoleViewContentType.NORMAL_OUTPUT;
+                    consoleView.print(value + "\n", contentType);
                     break;
                 default:
-                    consoleView.print(line + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+                    int size = line.length() + (PluginConstants.PROPERTY_SUGGESTION.length() + 4);
+                    consoleView.print(StringUtils.leftPad(line, size) + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
             }
         }
     }
