@@ -32,6 +32,12 @@
                 serviceImplementation="com.vchatrola.plugin.service.MyPluginServiceImpl"/>
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable instance="com.vchatrola.plugin.setting.GherkinLintConfigurable"
+                                 parentId="tools"
+                                 displayName="GherkinLint"/>
+    </extensions>
+
     <actions>
         <action id="Validate.Gherkin.Action"
                 class="com.vchatrola.plugin.action.GherkinValidationAction"
