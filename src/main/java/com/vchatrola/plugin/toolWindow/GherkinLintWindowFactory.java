@@ -3,8 +3,8 @@ package com.vchatrola.plugin.toolWindow;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.vchatrola.common.GherkinLintLogger;
-import com.vchatrola.plugin.util.PluginConstants;
+import com.vchatrola.util.GherkinLintLogger;
+import com.vchatrola.util.Constants;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -18,7 +18,7 @@ public class GherkinLintWindowFactory implements ToolWindowFactory {
         try {
             // Ensure this code runs on the Event Dispatch Thread
             JPanel contentPanel = new JPanel(new BorderLayout());
-            JLabel label = new JLabel(PluginConstants.DEFAULT_TOOL_WINDOW_TEXT);
+            JLabel label = new JLabel(Constants.DEFAULT_TOOL_WINDOW_TEXT);
             label.setForeground(UIManager.getColor("textInactiveText")); // Set text color to lighter shade
             contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
             contentPanel.add(label, BorderLayout.CENTER);

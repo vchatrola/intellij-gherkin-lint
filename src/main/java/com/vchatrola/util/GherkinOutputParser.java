@@ -1,9 +1,8 @@
-package com.vchatrola.gemini.util;
+package com.vchatrola.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vchatrola.plugin.util.PluginConstants;
 
 public class GherkinOutputParser {
 
@@ -18,15 +17,15 @@ public class GherkinOutputParser {
         JsonNode jsonArray = objectMapper.readTree(jsonString);
 
         for (JsonNode jsonObject : jsonArray) {
-            String title = jsonObject.get(PluginConstants.PROPERTY_TITLE.toLowerCase()).asText();
-            String status = jsonObject.get(PluginConstants.PROPERTY_STATUS.toLowerCase()).asText();
-            String reason = jsonObject.get(PluginConstants.PROPERTY_REASON.toLowerCase()).asText();
-            String suggestion = jsonObject.get(PluginConstants.PROPERTY_SUGGESTION.toLowerCase()).asText();
+            String title = jsonObject.get(Constants.PROPERTY_TITLE.toLowerCase()).asText();
+            String status = jsonObject.get(Constants.PROPERTY_STATUS.toLowerCase()).asText();
+            String reason = jsonObject.get(Constants.PROPERTY_REASON.toLowerCase()).asText();
+            String suggestion = jsonObject.get(Constants.PROPERTY_SUGGESTION.toLowerCase()).asText();
 
-            resultBuilder.append(PluginConstants.PROPERTY_TITLE).append(SEPARATOR).append(title).append("\n");
-            resultBuilder.append(PluginConstants.PROPERTY_STATUS).append(SEPARATOR).append(status).append("\n");
-            resultBuilder.append(PluginConstants.PROPERTY_REASON).append(SEPARATOR).append(reason).append("\n");
-            resultBuilder.append(PluginConstants.PROPERTY_SUGGESTION).append(SEPARATOR).append(suggestion).append("\n\n");
+            resultBuilder.append(Constants.PROPERTY_TITLE).append(SEPARATOR).append(title).append("\n");
+            resultBuilder.append(Constants.PROPERTY_STATUS).append(SEPARATOR).append(status).append("\n");
+            resultBuilder.append(Constants.PROPERTY_REASON).append(SEPARATOR).append(reason).append("\n");
+            resultBuilder.append(Constants.PROPERTY_SUGGESTION).append(SEPARATOR).append(suggestion).append("\n\n");
         }
 
         return resultBuilder.toString();

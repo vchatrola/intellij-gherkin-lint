@@ -1,4 +1,4 @@
-package com.vchatrola.common;
+package com.vchatrola.util;
 
 
 import com.intellij.openapi.diagnostic.Logger;

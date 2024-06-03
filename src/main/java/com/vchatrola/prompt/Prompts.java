@@ -1,5 +1,9 @@
-package com.vchatrola.gemini.util;
+package com.vchatrola.prompt;
 
+/**
+ * @deprecated This class is deprecated. Use {@link PromptTemplate} instead.
+ */
+@Deprecated
 public class Prompts {
 
     public static final String CONTEXT = """

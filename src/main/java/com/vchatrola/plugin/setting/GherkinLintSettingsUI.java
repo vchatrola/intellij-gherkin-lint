@@ -6,7 +6,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.FormBuilder;
-import com.vchatrola.common.ResourceUtil;
+import com.vchatrola.util.ResourceUtil;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,7 +1,7 @@
 package com.vchatrola.gemini.config;
 
-import com.vchatrola.common.GherkinLintLogger;
 import com.vchatrola.gemini.api.GeminiInterface;
+import com.vchatrola.util.GherkinLintLogger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -1,0 +1,91 @@
+{
+  "CONTEXT": "A QA engineer is working on a software test automation project using a BDD (Behavior-Driven Development) framework and needs to validate a selected portion of Gherkin syntax, which may have errors.",
+  "TASKS": [
+    "Validate each line (Scenario, Given, When, Then, And) based on the provided guidelines.",
+    "Check for syntax errors, tense, invalid keywords or missing elements, English grammar issues (articles, spellings), and determine validity.",
+    "The structure is mandatory. Deviations allowed with explanation of recommended structure.",
+    "For lines with errors, suggest corrections to achieve valid Gherkin syntax, adhering to the specific guidelines provided for each statement type (Scenario, Given, When, Then)",
+    "If a line is valid, consider providing insights or potential completions to enhance the script."
+  ],
+  "SCENARIO": {
+    "structure": [
+    ],
+    "tense": "",
+    "requirements": [],
+    "feedback": [],
+    "examples": {
+      "valid": [
+        "Scenario: Enroll a youth student into a section",
+        "Scenario: Enroll a student with warning profile hold into a section",
+        "Scenario: Enroll a student into a section with flat fee",
+        "Scenario: Enroll a student into a section with flat fee that is available for family checkout (Includes condition)"
+      ],
+      "invalid": [
+        {
+          "example": "Scenario: Youth section enrollment",
+          "reason": "(Vague and lacks details) - It doesn't starts with an action.",
+          "suggestion": "Scenario: Enroll a youth student into a section (Clear action and entity)"
+        }
+      ]
+    }
+  },
+  "GIVEN": {
+    "structure": [
+    ],
+    "tense": "",
+    "requirements": [],
+    "feedback": [],
+    "examples": {
+      "valid": [
+        "Given the student has added the section to the cart (Uses recommended structure and past perfect tense)"
+      ],
+      "invalid": [
+        {
+          "example": "Given the student adds a section to the cart",
+          "reason": "Incorrect tense",
+          "suggestion": "Given the student has added the section to the cart"
+        }
+      ]
+    }
+  },
+  "WHEN": {
+    "structure": [
+    ],
+    "tense": "",
+    "requirements": [],
+    "feedback": [],
+    "examples": {
+      "valid": [
+        "When the user submits the form (Uses recommended structure and present tense)"
+      ],
+      "invalid": [
+        {
+          "example": "When a student will purchase a section by deposit",
+          "reason": "It uses future tense and lacks the correct structure.",
+          "suggestion": "When the student purchases the section by deposit"
+        }
+      ]
+    }
+  },
+  "THEN": {
+    "structure": [
+    ],
+    "tense": "",
+    "requirements": [],
+    "feedback": [],
+    "examples": {
+      "valid": [
+        "Then the purchase is successful (Uses recommended structure and refers to action from When)",
+        "Then the validation error message for section not available is displayed (Uses recommended structure and present tense)"
+      ],
+      "invalid": [
+        {
+          "example": "And the section has a new student",
+          "reason": "(Incorrect structure). It does not use the correct structure.",
+          "suggestion": "And the student is enrolled in the section"
+        }
+      ]
+    }
+  },
+  "ENTITIES": []
+}

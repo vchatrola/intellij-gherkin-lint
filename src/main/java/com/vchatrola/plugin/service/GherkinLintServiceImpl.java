@@ -1,23 +1,23 @@
 package com.vchatrola.plugin.service;
 
 import com.intellij.openapi.components.Service;
-import com.vchatrola.common.GherkinLintLogger;
+import com.vchatrola.util.GherkinLintLogger;
 import com.vchatrola.gemini.config.AppConfig;
 import com.vchatrola.gemini.service.GeminiService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 @Service
-public final class MyPluginServiceImpl implements MyPluginService {
+public final class GherkinLintServiceImpl implements GherkinLintService {
 
     private final GeminiService geminiService;
 
-    public MyPluginServiceImpl() {
+    public GherkinLintServiceImpl() {
         // Use a custom class loader if necessary
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         AnnotationConfigApplicationContext applicationContext = null;
 
         try {
-            Thread.currentThread().setContextClassLoader(MyPluginServiceImpl.class.getClassLoader());
+            Thread.currentThread().setContextClassLoader(GherkinLintServiceImpl.class.getClassLoader());
 
             // Initialize Spring context
             applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);

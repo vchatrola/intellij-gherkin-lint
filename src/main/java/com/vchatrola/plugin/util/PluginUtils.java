@@ -8,7 +8,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.vchatrola.common.GherkinLintLogger;
+import com.vchatrola.util.GherkinLintLogger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;

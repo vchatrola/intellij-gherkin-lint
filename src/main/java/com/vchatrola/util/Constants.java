@@ -1,4 +1,4 @@
-package com.vchatrola.plugin.util;
+package com.vchatrola.util;
 
 import com.google.common.collect.ImmutableList;
 
@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * A utility class that holds constants used throughout the GherkinLint plugin.
  */
-public class PluginConstants {
+public class Constants {
 
     public static final String TOOL_WINDOW_ID = "GherkinLint";
     public static final String CONTENT_DISPLAY_NAME = "Result";

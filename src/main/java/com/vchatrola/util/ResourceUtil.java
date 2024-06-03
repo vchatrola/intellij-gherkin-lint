@@ -1,4 +1,4 @@
-package com.vchatrola.common;
+package com.vchatrola.util;
 
 import org.apache.commons.lang3.StringUtils;
 

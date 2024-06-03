@@ -28,8 +28,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- This ensures MyPluginService is recognized and initialized -->
         <applicationService
-                serviceInterface="com.vchatrola.plugin.service.MyPluginService"
-                serviceImplementation="com.vchatrola.plugin.service.MyPluginServiceImpl"/>
+                serviceInterface="com.vchatrola.plugin.service.GherkinLintService"
+                serviceImplementation="com.vchatrola.plugin.service.GherkinLintServiceImpl"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -40,7 +40,7 @@
 
     <actions>
         <action id="Validate.Gherkin.Action"
-                class="com.vchatrola.plugin.action.GherkinValidationAction"
+                class="com.vchatrola.plugin.action.GherkinLintAction"
                 text="Validate Gherkin"
                 icon="AllIcons.Actions.Replace"
                 description="Analyzes the selected Gherkin text for syntax errors and best practices.">
