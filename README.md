@@ -142,6 +142,12 @@ API key:
 
 You now have a free Gemini API key from Google and can use it with GherkinLint.
 
+## Important Information
+
+1. This plugin leverages LLM Gemini for validation and suggestions. Please ensure that you do not submit any sensitive data for validation.
+2. When using a custom validation file, verify that it contains no sensitive information to maintain data privacy and security.
+3. If you are not satisfied with the results, you can revalidate the file to obtain improved suggestions.
+
 ## Contribute to GherkinLint:
 
 We actively encourage contributions from the community! Feel free to fork the repository, fix bugs, add features, or
