@@ -76,7 +76,7 @@ public class PromptBuilder {
         JsonNode scenarioNode = config.get("SCENARIO");
         int sectionNumber = 3; // Starting from 3 because the first two requirements are fixed
 
-        String sectionHeader = String.format(PromptTemplate.STRUCTURE_INSTRUCTIONS, Constants.SCENARIO_KEYWORD);
+        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.SCENARIO_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
         scenarioTemplate = replacePlaceholder(scenarioTemplate, scenarioNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber++);
@@ -93,7 +93,7 @@ public class PromptBuilder {
         JsonNode givenNode = config.get("GIVEN");
         int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
 
-        String sectionHeader = String.format(PromptTemplate.STRUCTURE_INSTRUCTIONS, Constants.GIVEN_KEYWORD);
+        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.GIVEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
         givenTemplate = replacePlaceholder(givenTemplate, givenNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber++);
@@ -117,7 +117,7 @@ public class PromptBuilder {
         JsonNode whenNode = config.get("WHEN");
         int sectionNumber = 1;
 
-        String sectionHeader = String.format(PromptTemplate.STRUCTURE_INSTRUCTIONS, Constants.WHEN_KEYWORD);
+        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.WHEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
                 + PromptUtils.generateSpaces(4);
         whenTemplate = replacePlaceholder(whenTemplate, whenNode, STRUCTURE_FIELD, sectionHeader,
@@ -143,7 +143,7 @@ public class PromptBuilder {
         JsonNode thenNode = config.get("THEN");
         int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
 
-        String sectionHeader = String.format(PromptTemplate.STRUCTURE_INSTRUCTIONS, Constants.THEN_KEYWORD);
+        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
                 + PromptUtils.generateSpaces(4);
         thenTemplate = replacePlaceholder(thenTemplate, thenNode, STRUCTURE_FIELD, sectionHeader,

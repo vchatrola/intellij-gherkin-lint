@@ -81,14 +81,14 @@ public class PromptTemplate {
 
     public static final String OUTPUT_FORMAT_JSON = """
             **VALIDATION REPORT FORMAT (JSON STRUCTURE):**
-            * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax. 
+            * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax.
             * These objects should be parsable by standard Java JSON parsing libraries like Jackson.
             * Each object will have the following properties:
                 1. **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And steps, it should be the actual step text.
                 2. **status (string, required):** Must be either "Valid" or "Invalid", indicating the validation result for the line.
                 3. **reason (string, required):** A brief explanation for why the line is invalid. Use "NA" for valid lines.
                 4. **suggestion (string, required):**
-                    - For invalid lines: 
+                    - For invalid lines:
                         - Provide the corrected title of the line following the given standards.
                     - For valid lines:
                         - "Valid syntax": Indicates the line adheres to the Gherkin syntax.
@@ -130,9 +130,11 @@ public class PromptTemplate {
             Ensure that the Gherkin syntax is validated based on the best Cucumber BDD or JBehave BDD recommended format.
             """;
 
-    public static final String STRUCTURE_INSTRUCTIONS = """
-            **Structure (Mandatory):**
-                    * The %s step should follow one of the following recommended formats:
-            """;
+    public static String getStructureInstructions() {
+        String indentation = PromptUtils.getIndentation(SCENARIO_TEMPLATE, "{STRUCTURE_SECTION}");
+        return "**Structure (Mandatory):**" +
+                "\n" + indentation + PromptUtils.generateSpaces(5) +
+                "* The %s step should follow one of the following recommended formats:";
+    }
 
 }
