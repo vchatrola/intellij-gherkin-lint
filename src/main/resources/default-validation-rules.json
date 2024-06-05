@@ -8,17 +8,13 @@
     "If a line is valid, consider providing insights or potential completions to enhance the script."
   ],
   "SCENARIO": {
-    "structure": [
-    ],
+    "structure": [],
     "tense": "",
     "requirements": [],
     "feedback": [],
     "examples": {
       "valid": [
-        "Scenario: Enroll a youth student into a section",
-        "Scenario: Enroll a student with warning profile hold into a section",
-        "Scenario: Enroll a student into a section with flat fee",
-        "Scenario: Enroll a student into a section with flat fee that is available for family checkout (Includes condition)"
+        "Scenario: Enroll a youth student into a section"
       ],
       "invalid": [
         {
@@ -30,8 +26,7 @@
     }
   },
   "GIVEN": {
-    "structure": [
-    ],
+    "structure": [],
     "tense": "",
     "requirements": [],
     "feedback": [],
@@ -49,8 +44,7 @@
     }
   },
   "WHEN": {
-    "structure": [
-    ],
+    "structure": [],
     "tense": "",
     "requirements": [],
     "feedback": [],
@@ -68,15 +62,13 @@
     }
   },
   "THEN": {
-    "structure": [
-    ],
+    "structure": [],
     "tense": "",
     "requirements": [],
     "feedback": [],
     "examples": {
       "valid": [
-        "Then the purchase is successful (Uses recommended structure and refers to action from When)",
-        "Then the validation error message for section not available is displayed (Uses recommended structure and present tense)"
+        "Then the purchase is successful (Uses recommended structure and refers to action from When)"
       ],
       "invalid": [
         {
