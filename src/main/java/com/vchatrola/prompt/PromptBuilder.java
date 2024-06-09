@@ -178,7 +178,7 @@ public class PromptBuilder {
     public String buildWhenContext() {
         String whenTemplate = PromptTemplate.WHEN_TEMPLATE;
         JsonNode whenNode = config.get("WHEN");
-        int sectionNumber = 1;
+        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.WHEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
@@ -208,7 +208,7 @@ public class PromptBuilder {
     public String buildThenContext() {
         String thenTemplate = PromptTemplate.THEN_TEMPLATE;
         JsonNode thenNode = config.get("THEN");
-        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
+        int sectionNumber = 3; // // Starting from 3 because the first two requirements are fixed
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
@@ -229,8 +229,7 @@ public class PromptBuilder {
 
         thenTemplate = replaceExamples(thenTemplate, thenNode);
 
-        // Starting from 3 because the first two feedbacks are fixed
-        thenTemplate = appendFeedbackSection(thenTemplate, thenNode, 3);
+        thenTemplate = appendFeedbackSection(thenTemplate, thenNode, 1);
 
         return PromptUtils.removeEmptyLines(thenTemplate);
     }

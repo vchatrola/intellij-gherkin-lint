@@ -20,9 +20,6 @@
     "structure": [],
     "tense": "present tense",
     "requirements": [
-      "Title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:).",
-      "Title should be brief, descriptive, and avoid technical jargon or implementation details.",
-      "Title must clearly convey the main idea of the scenario and indicate what the scenario will test.",
       "Title should be concise yet descriptive enough to understand the context and expected outcome."
     ],
     "feedback": [],
@@ -76,9 +73,7 @@
   "GIVEN": {
     "structure": [],
     "tense": "present tense or present perfect tenses (ideally passive voice)",
-    "requirements": [
-      "Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs."
-    ],
+    "requirements": [],
     "feedback": [],
     "examples": {
       "valid": [
@@ -130,9 +125,7 @@
   "WHEN": {
     "structure": [],
     "tense": "present tense",
-    "requirements": [
-      "When step should describe the action or event directly related to the scenario's goal that triggers the scenario."
-    ],
+    "requirements": [],
     "feedback": [],
     "examples": {
       "valid": [
@@ -179,9 +172,7 @@
   "THEN": {
     "structure": [],
     "tense": "present tense",
-    "requirements": [
-      "Then step should describe the expected outcome or result of the action in the When step."
-    ],
+    "requirements": [],
     "feedback": [],
     "examples": {
       "valid": [

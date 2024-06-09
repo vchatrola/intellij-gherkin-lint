@@ -19,10 +19,8 @@ public class PromptTemplate {
             **SCENARIO GUIDELINES**
             * **Data:** The line starts with "Scenario:".
             * **Requirements:**
-                1. **Syntax:**
-                    * The scenario title must begin with the keyword "Scenario:".
-                2. **Clarity and Conciseness:**
-                    * The scenario title should clearly communicate the scenario's purpose without unnecessary details.
+                1. The scenario title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:)..
+                2. The scenario title must clearly convey the main idea of the scenario and indicate what the scenario will test.
                 {STRUCTURE_SECTION}
                 {REQUIREMENTS_SECTION}
             * **Examples:**
@@ -34,7 +32,7 @@ public class PromptTemplate {
             **GIVEN STEP GUIDELINES**
             * **Data:** The line starts with "Given" or the previous line started with "Given" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
-                1. Given statements should establish context for the scenario.
+                1. Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs.
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
                 {REQUIREMENTS_SECTION}
@@ -50,6 +48,7 @@ public class PromptTemplate {
             **WHEN STEP GUIDELINES**
             * **Data:** The line starts with "When" or the previous line started with "When" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
+                1. When step should describe the action or event directly related to the scenario's goal that triggers the scenario.
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
                 {REQUIREMENTS_SECTION}
@@ -65,8 +64,8 @@ public class PromptTemplate {
             **THEN STEP GUIDELINES**
             * **Data:** The line starts with "Then" or the previous line started with "Then" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
-                1. **Matching Actions:**
-                    * The action mentioned in the Then step should correspond to the action performed in the preceding When step.
+                1. Then step should describe the expected outcome or result of the action in the When step.
+                2. The action mentioned in the Then step should correspond to the action performed in the preceding When step.
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
                 {REQUIREMENTS_SECTION}
@@ -74,8 +73,6 @@ public class PromptTemplate {
                 {VALID_EXAMPLES_SECTION}
                 {INVALID_EXAMPLES_SECTION}
             * **Suggestions/Feedback:**
-                1. Ensure Then steps describe the resulting state or change caused by the action.
-                2. Ensure that the action in the Then step matches the actions used in the preceding WHEN steps.
                 {FEEDBACK_SECTION}
             """;
 

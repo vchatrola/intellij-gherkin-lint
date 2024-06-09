@@ -32,13 +32,13 @@ public class ConfigurationMerger {
                 } else {
                     ((ObjectNode) defaultNode).replace(key, customValue);
                 }
-            } else {
-                ((ObjectNode) defaultNode).set(key, customValue);
             }
         });
     }
 
     private void mergeArrays(ArrayNode defaultArray, ArrayNode customArray) {
+        defaultArray.removeAll();
+
         for (int i = 0; i < customArray.size(); i++) {
             JsonNode customElement = customArray.get(i);
 
