@@ -17,15 +17,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.content.Content;
-import com.vchatrola.plugin.setting.GherkinLintSettingsManager;
-import com.vchatrola.util.GherkinLintLogger;
-import com.vchatrola.gemini.service.GeminiService;
-import com.vchatrola.util.GherkinOutputParser;
 import com.vchatrola.config.ConfigurationManager;
+import com.vchatrola.gemini.service.GeminiService;
 import com.vchatrola.plugin.service.GherkinLintServiceImpl;
-import com.vchatrola.util.Constants;
+import com.vchatrola.plugin.setting.GherkinLintSettingsManager;
 import com.vchatrola.plugin.util.PluginUtils;
 import com.vchatrola.prompt.PromptBuilder;
+import com.vchatrola.util.Constants;
+import com.vchatrola.util.GherkinLintLogger;
+import com.vchatrola.util.GherkinOutputParser;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +35,7 @@ import java.io.IOException;
 
 public class GherkinLintAction extends AnAction {
 
-    public static String fileExtension;
+    public static String fileType;
 
     @Override
     public void actionPerformed(AnActionEvent event) {
@@ -81,9 +81,9 @@ public class GherkinLintAction extends AnAction {
             return false;
         }
 
-        fileExtension = psiFile.getFileType().getDefaultExtension();
-        if (!Constants.SUPPORTED_EXTENSIONS.contains(fileExtension)) {
-            GherkinLintLogger.info("Validation is not applicable: Unsupported file extension: " + fileExtension);
+        fileType = psiFile.getFileType().getDefaultExtension();
+        if (!Constants.SUPPORTED_EXTENSIONS.contains(fileType)) {
+            GherkinLintLogger.info("Validation is not applicable: Unsupported file extension: " + fileType);
             return false;
         }
 
@@ -102,7 +102,7 @@ public class GherkinLintAction extends AnAction {
     private void validateGherkinText(String selectedText, ConsoleView consoleView, @Nullable Project project) {
         if (isEmptyOrInvalidText(selectedText, consoleView)
                 || isTooShort(selectedText, consoleView)
-                || startsWithAndKeyword(selectedText, consoleView)) {
+                || startsWithNoContextKeyword(selectedText, consoleView)) {
             return;
         }
 
@@ -110,8 +110,8 @@ public class GherkinLintAction extends AnAction {
             GherkinLintSettingsManager settingsManager = new GherkinLintSettingsManager();
             ConfigurationManager configurationManager = new ConfigurationManager();
             JsonNode jsonNode = configurationManager.getFinalConfiguration();
-            PromptBuilder promptBuilder = new PromptBuilder(jsonNode);
-            String prompt = promptBuilder.buildPrompt(selectedText, fileExtension, !settingsManager.isCustomLogicEnabled());
+            PromptBuilder promptBuilder = new PromptBuilder(jsonNode, fileType);
+            String prompt = promptBuilder.buildPrompt(selectedText, !settingsManager.isCustomLogicEnabled());
             runValidationTask(project, consoleView, prompt);
         } catch (IOException e) {
             reportError(consoleView, Constants.UNKNOWN_ERROR, e.getMessage());
@@ -220,9 +220,11 @@ public class GherkinLintAction extends AnAction {
         return false;
     }
 
-    private boolean startsWithAndKeyword(String text, ConsoleView consoleView) {
-        if (StringUtils.equalsAnyIgnoreCase(Constants.AND_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))) {
-            reportError(consoleView, Constants.GHERKIN_AND_NO_CONTEXT_ERROR, null);
+    private boolean startsWithNoContextKeyword(String text, ConsoleView consoleView) {
+        if (StringUtils.equalsAnyIgnoreCase(Constants.AND_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))
+                || StringUtils.equalsAnyIgnoreCase(Constants.BUT_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))
+                || StringUtils.startsWith(text, Constants.ASTERISK_KEYWORD)) {
+            reportError(consoleView, Constants.GHERKIN_NO_CONTEXT_ERROR, null);
             return true;
         }
         return false;

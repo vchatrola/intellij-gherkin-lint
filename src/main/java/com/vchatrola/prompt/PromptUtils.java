@@ -50,4 +50,11 @@ public class PromptUtils {
 
         return lastIndentation;
     }
+
+    public static boolean hasAngleBracketPlaceholders(String text) {
+        int openingIndex = text.indexOf('<');
+        int closingIndex = text.indexOf('>');
+        return openingIndex != -1 && closingIndex != -1 && openingIndex < closingIndex;
+    }
+
 }

@@ -6,8 +6,13 @@ public class PromptTemplate {
             **CONTEXT**
             * {CONTEXT}
 
-            **TASKS**
+            **YOUR TASKS**
             {TASKS}
+            """;
+
+    public static final String GENERAL_REQUIREMENTS_TEMPLATE = """
+            **GENERAL REQUIREMENTS**
+            {REQUIREMENTS_SECTION}
             """;
 
     public static final String SCENARIO_TEMPLATE = """
@@ -27,7 +32,7 @@ public class PromptTemplate {
 
     public static final String GIVEN_TEMPLATE = """
             **GIVEN STEP GUIDELINES**
-            * **Data:** The line starts with "Given" or the previous line started with "Given" and the current line starts with "And".
+            * **Data:** The line starts with "Given" or the previous line started with "Given" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
                 1. Given statements should establish context for the scenario.
                 {STRUCTURE_SECTION}
@@ -43,7 +48,7 @@ public class PromptTemplate {
 
     public static final String WHEN_TEMPLATE = """
             **WHEN STEP GUIDELINES**
-            * **Data:** The line starts with "When" or the previous line started with "When" and the current line starts with "And".
+            * **Data:** The line starts with "When" or the previous line started with "When" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
@@ -58,7 +63,7 @@ public class PromptTemplate {
 
     public static final String THEN_TEMPLATE = """
             **THEN STEP GUIDELINES**
-            * **Data:** The line starts with "Then" or the previous line started with "Then" and the current line starts with "And".
+            * **Data:** The line starts with "Then" or the previous line started with "Then" and the current line starts with "And" or "But" or "*".
             * **Requirements:**
                 1. **Matching Actions:**
                     * The action mentioned in the Then step should correspond to the action performed in the preceding When step.
@@ -74,6 +79,11 @@ public class PromptTemplate {
                 {FEEDBACK_SECTION}
             """;
 
+    public static final String TAG_TEMPLATE = """
+            **TAG GUIDELINES**
+            {REQUIREMENTS_SECTION}
+            """;
+
     public static final String LLM_INPUT = """
             **INPUT:**
             %s
@@ -84,7 +94,7 @@ public class PromptTemplate {
             * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax.
             * These objects should be parsable by standard Java JSON parsing libraries like Jackson.
             * Each object will have the following properties:
-                1. **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And steps, it should be the actual step text.
+                1. **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And, But, Meta, *,  steps, it should be the actual step text.
                 2. **status (string, required):** Must be either "Valid" or "Invalid", indicating the validation result for the line.
                 3. **reason (string, required):** A brief explanation for why the line is invalid. Use "NA" for valid lines.
                 4. **suggestion (string, required):**
@@ -93,7 +103,7 @@ public class PromptTemplate {
                     - For valid lines:
                         - "Valid syntax": Indicates the line adheres to the Gherkin syntax.
                         - "Consider refactoring": Suggests potential improvements to the line, even though it's syntactically valid (e.g., clearer wording, better keyword usage).
-                        - "[Specific suggestion]": Offers a tailored suggestion for improvement (e.g., "Replace 'then' with 'and' for a better flow").
+                        - "[Specific suggestion]": Offers a tailored suggestion for improvement (e.g., "Replace 'Then' with 'And' or 'But' for a better flow").
             * **Example:**
                 ```json
                 [
@@ -129,6 +139,14 @@ public class PromptTemplate {
     public static final String GENERIC_PROMPT_BOTH = """
             Ensure that the Gherkin syntax is validated based on the best Cucumber BDD or JBehave BDD recommended format.
             """;
+
+    public static final String PERSPECTIVE_REQUIREMENT = "All the steps must be written in the %s point of view.";
+
+    public static final String BUT_REQUIREMENT = "For \"But\" statements, ensure proper placement after Given, When, " +
+            "Then or And. Also Verify it introduces an unexpected or negative outcome related to the preceding statement.";
+
+    public static final String EXAMPLES_REQUIREMENT = "For scenarios with < > placeholders, ensure following " +
+            "'Examples:' sections with matching parameter values. Suggest adding 'Examples:' if missing.";
 
     public static String getStructureInstructions() {
         String indentation = PromptUtils.getIndentation(SCENARIO_TEMPLATE, "{STRUCTURE_SECTION}");
