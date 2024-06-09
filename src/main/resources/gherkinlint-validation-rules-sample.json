@@ -1,134 +1,99 @@
 {
+  "PERSPECTIVE": "third-person or first-person (add valid/invalid example)",
   "SCENARIO": {
-    "structure": [
-      "{Action} {Entity} {Association}{Condition}"
-    ],
-    "tense": "present",
+    "structure": [],
+    "tense": "present tense",
     "requirements": [
-      "The scenario title must be unique within the feature file."
+      "Title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:)."
     ],
-    "feedback": [
-      "Ensure the scenario title is concise and clear."
-    ],
+    "feedback": [],
     "examples": {
       "valid": [
-        "Scenario: Enroll a youth student into a section",
-        "Scenario: Enroll a student with warning profile hold into a section",
-        "Scenario: Enroll a student into a section with flat fee",
-        "Scenario: Enroll a student into a section with flat fee that is available for family checkout (Includes condition)"
+        "Scenario: Admin creates a new user"
       ],
       "invalid": [
         {
-          "example": "Scenario: Youth section enrollment",
-          "reason": "Vague and lacks details",
-          "suggestion": "Scenario: Enroll a youth student into a section"
-        },
-        {
-          "example": "Scenario: As a student with a profile hold, I still want to purchase a section in public site to enroll into the section",
-          "reason": "Too long and includes user role",
-          "suggestion": "Scenario: Enroll a student with warning profile hold into a section"
-        },
-        {
-          "example": "Scenario: Section with flat fee enrollment",
-          "reason": "Focuses on section, not action",
-          "suggestion": "Scenario: Enroll a student into a section with flat fee"
+          "example": "Scenario: Admin creating new user account",
+          "reason": "Not in present tense and lacks clarity.",
+          "suggestion": "Scenario: Admin creates a new user"
         }
       ]
     }
   },
   "GIVEN": {
-    "structure": [
-      "{there exists/a/an/} {entity} {with/having} {Association}{Condition}",
-      "{Entity} {has performed an action} {entity 1}"
-    ],
-    "tense": "past",
+    "structure": [],
+    "tense": "present tense or present perfect tenses (ideally passive voice)",
     "requirements": [
-      "Given statements should establish context for the scenario."
+      "Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs."
     ],
-    "feedback": [
-      "Ensure Given steps are focused on preconditions that exist before the scenario begins."
-    ],
+    "feedback": [],
     "examples": {
       "valid": [
-        "Given there exists a section with an active waitlist (Uses recommended structure and past tense)",
-        "Given the student has added the section to the cart (Uses recommended structure and past perfect tense)"
+        "Given the user is logged in"
       ],
       "invalid": [
         {
-          "example": "Given a section that is accepting wait list students",
-          "reason": "Incorrect structure",
-          "suggestion": "Given there exists a section with an active waitlist"
-        },
-        {
-          "example": "Given the student adds a section to the cart",
-          "reason": "Incorrect tense",
-          "suggestion": "Given the student has added the section to the cart"
+          "example": "Given the user will log in",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "Given the user is logged in"
         }
       ]
     }
   },
   "WHEN": {
-    "structure": [
-      "the {entity} {performs action with/on} {entity 1} {entity 2}"
-    ],
-    "tense": "present",
+    "structure": [],
+    "tense": "present tense",
     "requirements": [
-      "When steps should describe a single action or behavior."
+      "When step should describe the action or event directly related to the scenario's goal that triggers the scenario."
     ],
-    "feedback": [
-      "Ensure When steps are focused on actions being taken in the current context."
-    ],
+    "feedback": [],
     "examples": {
       "valid": [
-        "When the student purchases the section by deposit (Uses recommended structure and present tense)",
-        "When the user submits the form (Uses recommended structure and present tense)"
+        "When the user clicks on the 'Submit' button"
       ],
       "invalid": [
         {
-          "example": "When a student will purchase a section by deposit",
-          "reason": "Incorrect tense and structure",
-          "suggestion": "When the student purchases the section by deposit"
+          "example": "When the user will click on the 'Submit' button",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "When the user clicks on the 'Submit' button"
         },
         {
-          "example": "When the student navigates to the section profile and adds the section to the cart",
-          "reason": "Multiple actions",
-          "suggestion": "When the student adds the section to the cart"
+          "example": "When the user clicks on the 'Submit' button and sees the confirmation message",
+          "reason": "Combines action and outcome in one step.",
+          "suggestion": "When the user clicks on the 'Submit' button"
         }
       ]
     }
   },
   "THEN": {
-    "structure": [
-      "the {action} is {successful/fail/error is displayed}",
-      "the {entity} {action outcome} {entity 1}",
-      "the validation error message for <action outcome> <validation condition>"
-    ],
-    "tense": "present or future",
+    "structure": [],
+    "tense": "present tense",
     "requirements": [
-      "Then steps should focus on the expected outcome or result."
+      "Then step should describe the expected outcome or result of the action in the When step."
     ],
-    "feedback": [
-      "Ensure Then steps describe the resulting state or change caused by the action."
-    ],
+    "feedback": [],
     "examples": {
       "valid": [
-        "Then the purchase is successful (Uses recommended structure and refers to action from When)",
-        "Then the student is enrolled in the section (Uses recommended structure and refers to entity from Given)",
-        "Then the validation error message for section not available is displayed (Uses recommended structure and present tense)"
+        "Then the user should see a success message"
       ],
       "invalid": [
         {
-          "example": "Then the enrollment to the section is successful",
-          "reason": "Incorrect action phrasing",
-          "suggestion": "Then the purchase is successful"
+          "example": "Then the user will see a success message",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "Then the user should see a success message"
         },
         {
-          "example": "And the section has a new student",
-          "reason": "Incorrect structure",
-          "suggestion": "And the student is enrolled in the section"
+          "example": "Then success",
+          "reason": "Too vague and lacks detail.",
+          "suggestion": "Then the user should see a success message"
         }
       ]
     }
+  },
+  "TAG": {
+    "requirements": [
+      "Tags must be prefixed with the \"@\" symbol and written in lowercase using hyphens (-) to separate words."
+    ]
   },
   "ENTITIES": [
     "student",

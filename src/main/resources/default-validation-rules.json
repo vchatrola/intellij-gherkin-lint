@@ -1,83 +1,239 @@
 {
-  "CONTEXT": "A QA engineer is working on a software test automation project using a BDD (Behavior-Driven Development) framework and needs to validate a selected portion of Gherkin syntax, which may have errors.",
+  "CONTEXT": "Imagine a QA Engineer testing software with BDD. They require your expertise to review a Gherkin code snippet for errors. You'll receive the Gherkin code as input, along with general requirements and specific guidelines for each keyword (Given, When, Then, etc.). Analyze strictly based on these to ensure error-free, well-structured Gherkin syntax aligned with best practices.",
   "TASKS": [
-    "Validate each line (Scenario, Given, When, Then, And) based on the provided guidelines.",
-    "Check for syntax errors, tense, invalid keywords or missing elements, English grammar issues (articles, spellings), and determine validity.",
-    "The structure is mandatory. Deviations allowed with explanation of recommended structure.",
-    "For lines with errors, suggest corrections to achieve valid Gherkin syntax, adhering to the specific guidelines provided for each statement type (Scenario, Given, When, Then)",
-    "If a line is valid, consider providing insights or potential completions to enhance the script."
+    "Validate each line (Scenario, Given, When, Then, And, But, *, Meta, @) based on the provided guidelines.",
+    "Check for syntax errors, tense consistency, invalid keywords or missing elements, grammar issues, and improper punctuation. Step should not end with punctuation (periods, commas, etc.).",
+    "For lines with errors, suggest corrections to achieve valid Gherkin syntax, adhering to the specific guidelines provided for each statement type.",
+    "For valid lines, provide insights or potential completions to enhance the script."
   ],
+  "REQUIREMENTS": [
+    "The structure is mandatory. Deviations allowed with explanation of recommended structure.",
+    "Ensure that for multiple Given, When, or Then statements, the user connects them using 'And' instead of repeating the keywords.",
+    "Steps should be clear, concise, sound like plain English, declarative (what happens) rather than imperative (how to do it) and avoid technical jargon or implementation details.",
+    "Steps must follow Given -> When -> Then order and cannot repeat. A Given cannot follow a When or Then, and a When cannot follow a Then.",
+    "Limit scenarios to 2-3 'And' steps per Given/When/Then. Split into multiple scenarios for clarity if needed.",
+    "If scenarios share steps, define them in Background or Before sections for reuse.",
+    "Gherkin does not support an 'Or' step. Use separate scenarios for alternative actions."
+  ],
+  "PERSPECTIVE": "third-person (i.e. Valid: The user logs in to the system. Invalid: I log in to the system.)",
   "SCENARIO": {
     "structure": [],
-    "tense": "",
-    "requirements": [],
+    "tense": "present tense",
+    "requirements": [
+      "Title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:).",
+      "Title should be brief, descriptive, and avoid technical jargon or implementation details.",
+      "Title must clearly convey the main idea of the scenario and indicate what the scenario will test.",
+      "Title should be concise yet descriptive enough to understand the context and expected outcome."
+    ],
     "feedback": [],
     "examples": {
       "valid": [
-        "Scenario: Enroll a youth student into a section"
+        "Scenario: User logs in successfully",
+        "Scenario: Admin creates a new user",
+        "Scenario: User updates profile information",
+        "Scenario: User receives a password reset email",
+        "Scenario: User adds item to cart",
+        "Scenario: Guest user views product details",
+        "Scenario: User searches for a product by name",
+        "Scenario: Admin deletes a user account",
+        "Scenario: User changes password",
+        "Scenario: User checks out with multiple items"
       ],
       "invalid": [
         {
-          "example": "Scenario: Youth section enrollment",
-          "reason": "(Vague and lacks details) - It doesn't starts with an action.",
-          "suggestion": "Scenario: Enroll a youth student into a section (Clear action and entity)"
+          "example": "Scenario: Logging in",
+          "reason": "Too vague and not in present tense.",
+          "suggestion": "Scenario: User logs in successfully"
+        },
+        {
+          "example": "Scenario: When the user clicks login button",
+          "reason": "Contains implementation detail and implies a sequence step.",
+          "suggestion": "Scenario: User logs in successfully"
+        },
+        {
+          "example": "Scenario: The user will be able to login",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "Scenario: User logs in successfully"
+        },
+        {
+          "example": "Scenario: Admin creating new user account",
+          "reason": "Not in present tense and lacks clarity.",
+          "suggestion": "Scenario: Admin creates a new user"
+        },
+        {
+          "example": "Scenario: User login with correct credentials and sees dashboard",
+          "reason": "Too lengthy and combines multiple actions and outcomes.",
+          "suggestion": "Scenario: User logs in successfully"
+        },
+        {
+          "example": "Scenario: Sign Up, open the Balance Screen, check balance, log off",
+          "reason": "Non-specific, not descriptive.",
+          "suggestion": "Scenario: Check balance when an overdraft is on"
         }
       ]
     }
   },
   "GIVEN": {
     "structure": [],
-    "tense": "",
-    "requirements": [],
+    "tense": "present tense or present perfect tenses (ideally passive voice)",
+    "requirements": [
+      "Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs."
+    ],
     "feedback": [],
     "examples": {
       "valid": [
-        "Given the student has added the section to the cart (Uses recommended structure and past perfect tense)"
+        "Given the user is logged in",
+        "Given the user is on the homepage",
+        "Given the shopping cart is empty",
+        "Given the admin is on the user management page",
+        "Given the user has entered valid credentials",
+        "Given the user is on the product details page",
+        "Given the user has items in the cart",
+        "Given the system time is set to 10:00 AM",
+        "Given the user has received a password reset email",
+        "Given the user profile is complete"
       ],
       "invalid": [
         {
-          "example": "Given the student adds a section to the cart",
-          "reason": "Incorrect tense",
-          "suggestion": "Given the student has added the section to the cart"
+          "example": "Given the user will log in",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "Given the user is logged in"
+        },
+        {
+          "example": "Given the user clicks the login button",
+          "reason": "Describes an action rather than a state or context.",
+          "suggestion": "Given the user is on the login page"
+        },
+        {
+          "example": "Given the user is logged in and on the homepage",
+          "reason": "Combines two contexts into one step, making it unclear.",
+          "suggestion": "Given the user is logged in\nAnd the user is on the homepage"
+        },
+        {
+          "example": "Given the database is connected",
+          "reason": "Includes technical implementation detail.",
+          "suggestion": "Given the user is on the application homepage"
+        },
+        {
+          "example": "And the user has clicked on the 'Forgot Password' link",
+          "reason": "Describes an action instead of the state.",
+          "suggestion": "And the user is on the password reset page"
+        },
+        {
+          "example": "Given the user opens a web browser And the user navigates to 'https://www.google.com/'",
+          "reason": "Describes an action instead of the state.",
+          "suggestion": "Given a user is on the Google home page"
         }
       ]
     }
   },
   "WHEN": {
     "structure": [],
-    "tense": "",
-    "requirements": [],
+    "tense": "present tense",
+    "requirements": [
+      "When step should describe the action or event directly related to the scenario's goal that triggers the scenario."
+    ],
     "feedback": [],
     "examples": {
       "valid": [
-        "When the user submits the form (Uses recommended structure and present tense)"
+        "When the user clicks on the 'Submit' button",
+        "When the user logs out",
+        "When the user adds an item to the cart",
+        "When the user searches for a product",
+        "When the user updates their profile",
+        "When the user navigates to the homepage",
+        "When the user resets their password",
+        "When the user views the order details",
+        "When the admin deletes a user account",
+        "When the user changes their password"
       ],
       "invalid": [
         {
-          "example": "When a student will purchase a section by deposit",
-          "reason": "It uses future tense and lacks the correct structure.",
-          "suggestion": "When the student purchases the section by deposit"
+          "example": "When the user will click on the 'Submit' button",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "When the user clicks on the 'Submit' button"
+        },
+        {
+          "example": "When the user is clicking on the 'Submit' button",
+          "reason": "Uses present continuous tense instead of present tense.",
+          "suggestion": "When the user clicks on the 'Submit' button"
+        },
+        {
+          "example": "When the user clicks on the 'Submit' button and sees the confirmation message",
+          "reason": "Combines action and outcome in one step.",
+          "suggestion": "When the user clicks on the 'Submit' button"
+        },
+        {
+          "example": "When the database is updated",
+          "reason": "Describes a system action rather than a user action.",
+          "suggestion": "When the user updates their profile"
+        },
+        {
+          "example": "And the user clicks submit",
+          "reason": "Lacks clarity and detail.",
+          "suggestion": "And the user clicks on the 'Submit' button"
         }
       ]
     }
   },
   "THEN": {
     "structure": [],
-    "tense": "",
-    "requirements": [],
+    "tense": "present tense",
+    "requirements": [
+      "Then step should describe the expected outcome or result of the action in the When step."
+    ],
     "feedback": [],
     "examples": {
       "valid": [
-        "Then the purchase is successful (Uses recommended structure and refers to action from When)"
+        "Then the user should see a success message",
+        "Then the cart should display the added item",
+        "Then the user should be logged out",
+        "Then the profile should be updated",
+        "Then the search results should include the product",
+        "Then the user should see the homepage",
+        "Then the password should be reset",
+        "Then the order details should be displayed",
+        "Then the user account should be deleted",
+        "Then the password should be changed"
       ],
       "invalid": [
         {
-          "example": "And the section has a new student",
-          "reason": "(Incorrect structure). It does not use the correct structure.",
-          "suggestion": "And the student is enrolled in the section"
+          "example": "Then the user will see a success message",
+          "reason": "Uses future tense instead of present tense.",
+          "suggestion": "Then the user should see a success message"
+        },
+        {
+          "example": "Then the user is seeing a success message",
+          "reason": "Uses present continuous tense instead of present tense.",
+          "suggestion": "Then the user should see a success message"
+        },
+        {
+          "example": "Then the user sees a success message and the profile is updated",
+          "reason": "Combines multiple outcomes in one step.",
+          "suggestion": "Then the user should see a success message"
+        },
+        {
+          "example": "And the database is updated",
+          "reason": "Describes a system action rather than a user-visible outcome.",
+          "suggestion": "And the profile should be updated"
+        },
+        {
+          "example": "Then success",
+          "reason": "Too vague and lacks detail.",
+          "suggestion": "Then the user should see a success message"
+        },
+        {
+          "example": "Then video links for \"sneakers\"",
+          "reason": "Too vague and lacks detail.",
+          "suggestion": "Then the results page shows video links for \"sneakers\""
         }
       ]
     }
+  },
+  "TAG": {
+    "requirements": [
+      "Tags must be prefixed with the \"@\" symbol and written in lowercase using hyphens (-) to separate words."
+    ]
   },
   "ENTITIES": []
 }
