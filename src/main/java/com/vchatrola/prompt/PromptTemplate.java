@@ -17,10 +17,9 @@ public class PromptTemplate {
 
     public static final String SCENARIO_TEMPLATE = """
             **SCENARIO GUIDELINES**
-            * **Data:** The line starts with "Scenario:".
+            * **Applicable Line:** Any line starting with "Scenario:" or "Scenario Outline:".
             * **Requirements:**
-                1. The scenario title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:)..
-                2. The scenario title must clearly convey the main idea of the scenario and indicate what the scenario will test.
+                1. The scenario title must clearly convey the main idea of the scenario and indicate what the scenario will test.
                 {STRUCTURE_SECTION}
                 {REQUIREMENTS_SECTION}
             * **Examples:**
@@ -30,7 +29,7 @@ public class PromptTemplate {
 
     public static final String GIVEN_TEMPLATE = """
             **GIVEN STEP GUIDELINES**
-            * **Data:** The line starts with "Given" or the previous line started with "Given" and the current line starts with "And" or "But" or "*".
+            * **Applicable Line:** Any line starting with "Given" or following a "Given" line with "And," "But," or "*".
             * **Requirements:**
                 1. Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs.
                 {STRUCTURE_SECTION}
@@ -39,45 +38,40 @@ public class PromptTemplate {
             * **Examples:**
                 {VALID_EXAMPLES_SECTION}
                 {INVALID_EXAMPLES_SECTION}
-            * **Suggestions/Feedback:**
-                1. Remind users that Given steps establish preconditions that exist before the scenario begins.
-                {FEEDBACK_SECTION}
+            {FEEDBACK_SECTION}
             """;
 
     public static final String WHEN_TEMPLATE = """
             **WHEN STEP GUIDELINES**
-            * **Data:** The line starts with "When" or the previous line started with "When" and the current line starts with "And" or "But" or "*".
+            * **Applicable Line:** Any line starting with "When" or following a "When" line with "And," "But," or "*".
             * **Requirements:**
-                1. When step should describe the action or event directly related to the scenario's goal that triggers the scenario.
+                1. When steps should describe the action or event directly related to the scenario's goal, ensuring focus on actions being taken in the current context.
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
                 {REQUIREMENTS_SECTION}
             * **Examples:**
                 {VALID_EXAMPLES_SECTION}
                 {INVALID_EXAMPLES_SECTION}
-            * **Suggestions/Feedback:**
-                1. Ensure When steps are focused on actions being taken in the current context.
-                {FEEDBACK_SECTION}
+            {FEEDBACK_SECTION}
             """;
 
     public static final String THEN_TEMPLATE = """
             **THEN STEP GUIDELINES**
-            * **Data:** The line starts with "Then" or the previous line started with "Then" and the current line starts with "And" or "But" or "*".
+            * **Applicable Line:** Any line starting with "Then" or following a "Then" line with "And," "But," or "*".
             * **Requirements:**
-                1. Then step should describe the expected outcome or result of the action in the When step.
-                2. The action mentioned in the Then step should correspond to the action performed in the preceding When step.
+                1. Then step should describe the expected outcome or result, corresponding to the action performed in the preceding When step.
                 {STRUCTURE_SECTION}
                 {TENSE_SECTION}
                 {REQUIREMENTS_SECTION}
             * **Examples:**
                 {VALID_EXAMPLES_SECTION}
                 {INVALID_EXAMPLES_SECTION}
-            * **Suggestions/Feedback:**
-                {FEEDBACK_SECTION}
+            {FEEDBACK_SECTION}
             """;
 
     public static final String TAG_TEMPLATE = """
             **TAG GUIDELINES**
+            * **Applicable Line:** Any line starting with "Meta" or "@".
             {REQUIREMENTS_SECTION}
             """;
 
@@ -88,8 +82,7 @@ public class PromptTemplate {
 
     public static final String OUTPUT_FORMAT_JSON = """
             **VALIDATION REPORT FORMAT (JSON STRUCTURE):**
-            * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax.
-            * These objects should be parsable by standard Java JSON parsing libraries like Jackson.
+            * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax, parseable by standard Java JSON parsing libraries like Jackson.
             * Each object will have the following properties:
                 1. **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And, But, Meta, *,  steps, it should be the actual step text.
                 2. **status (string, required):** Must be either "Valid" or "Invalid", indicating the validation result for the line.
@@ -139,8 +132,8 @@ public class PromptTemplate {
 
     public static final String PERSPECTIVE_REQUIREMENT = "All the steps must be written in the %s point of view.";
 
-    public static final String BUT_REQUIREMENT = "For \"But\" statements, ensure proper placement after Given, When, " +
-            "Then or And. Also Verify it introduces an unexpected or negative outcome related to the preceding statement.";
+    public static final String BUT_REQUIREMENT = "For \"But\" statements, ensure proper placement after Given, When, "
+            + "Then or And. Also Verify it introduces an unexpected or negative outcome related to the preceding statement.";
 
     public static final String EXAMPLES_REQUIREMENT = "For scenarios with < > placeholders, ensure following " +
             "'Examples:' sections with matching parameter values. Suggest adding 'Examples:' if missing.";

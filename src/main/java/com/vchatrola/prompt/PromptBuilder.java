@@ -13,12 +13,12 @@ public class PromptBuilder {
     private static final String REQUIREMENTS_SECTION = "{REQUIREMENTS_SECTION}";
     private static final String VALID_EXAMPLES_SECTION = "{VALID_EXAMPLES_SECTION}";
     private static final String INVALID_EXAMPLES_SECTION = "{INVALID_EXAMPLES_SECTION}";
-    private static final String FEEDBACK_SECTION = "{FEEDBACK_SECTION}";
     private static final String TENSE_SECTION = "{TENSE_SECTION}";
     private static final String ENTITIES_PLACEHOLDER = "{ENTITIES_LIST}";
     private static final String EXAMPLES_HEADER = "* **Examples:**";
+    private static final String REQUIREMENTS_HEADER = "**Requirements:**";
     private static final String ADDITIONAL_REQUIREMENTS = "**Additional Requirements:**";
-    private static final String SUGGESTIONS_HEADER = "* **Suggestions/Feedback:**";
+    private static final String SUGGESTIONS_HEADER = "**Suggestions/Feedback:**";
     private static final String TENSE_HEADER_FORMAT = "%d. **Tense:**\n%s* Ensure that %s statements are in the %s\n";
     private static final String STRUCTURE_FIELD = "structure";
     private static final String REQUIREMENTS_FIELD = "requirements";
@@ -131,7 +131,7 @@ public class PromptBuilder {
     public String buildScenarioContext() {
         String scenarioTemplate = PromptTemplate.SCENARIO_TEMPLATE;
         JsonNode scenarioNode = config.get("SCENARIO");
-        int sectionNumber = 3; // Starting from 3 because the first two requirements are fixed
+        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.SCENARIO_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
@@ -171,8 +171,9 @@ public class PromptBuilder {
 
         givenTemplate = replaceExamples(givenTemplate, givenNode);
 
-        // Starting from 2 because the first feedback is fixed
-        givenTemplate = appendFeedbackSection(givenTemplate, givenNode, 2);
+        String header = "* " + SUGGESTIONS_HEADER;
+        givenTemplate = appendSectionListWithHeader(givenTemplate, givenNode, FEEDBACK_FIELD, header,
+                PromptUtils.generateSpaces(4));
 
         return PromptUtils.removeEmptyLines(givenTemplate);
     }
@@ -201,8 +202,9 @@ public class PromptBuilder {
 
         whenTemplate = replaceExamples(whenTemplate, whenNode);
 
-        // Starting from 2 because the first feedback is fixed
-        whenTemplate = appendFeedbackSection(whenTemplate, whenNode, 2);
+        String header = "* " + SUGGESTIONS_HEADER;
+        whenTemplate = appendSectionListWithHeader(whenTemplate, whenNode, FEEDBACK_FIELD, header,
+                PromptUtils.generateSpaces(4));
 
         return PromptUtils.removeEmptyLines(whenTemplate);
     }
@@ -210,7 +212,7 @@ public class PromptBuilder {
     public String buildThenContext() {
         String thenTemplate = PromptTemplate.THEN_TEMPLATE;
         JsonNode thenNode = config.get("THEN");
-        int sectionNumber = 3; // // Starting from 3 because the first two requirements are fixed
+        int sectionNumber = 2; // // Starting from 2 because the first requirement is fixed
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
@@ -231,7 +233,9 @@ public class PromptBuilder {
 
         thenTemplate = replaceExamples(thenTemplate, thenNode);
 
-        thenTemplate = appendFeedbackSection(thenTemplate, thenNode, 1);
+        String header = "* " + SUGGESTIONS_HEADER;
+        thenTemplate = appendSectionListWithHeader(thenTemplate, thenNode, FEEDBACK_FIELD, header,
+                PromptUtils.generateSpaces(4));
 
         return PromptUtils.removeEmptyLines(thenTemplate);
     }
@@ -239,8 +243,9 @@ public class PromptBuilder {
     private String buildTagContext() {
         String tagTemplate = PromptTemplate.TAG_TEMPLATE;
         JsonNode tagNode = config.get("TAG");
-        tagTemplate = replacePlaceholder(tagTemplate, tagNode, REQUIREMENTS_FIELD, "", "",
-                1).getLeft();
+        String header = "* " + REQUIREMENTS_HEADER;
+        tagTemplate = appendSectionListWithHeader(tagTemplate, tagNode, REQUIREMENTS_FIELD, header,
+                PromptUtils.generateSpaces(4));
         return tagTemplate;
     }
 
@@ -305,21 +310,18 @@ public class PromptBuilder {
         return template;
     }
 
-    private static String appendFeedbackSection(String template, JsonNode node, int startingNumber) {
-        if (node.hasNonNull(FEEDBACK_FIELD) && node.get(FEEDBACK_FIELD).isArray() && !node.get(FEEDBACK_FIELD).isEmpty()) {
-            StringBuilder feedbackBuilder = new StringBuilder();
-            int feedbackNumber = startingNumber;
-            String indentation = PromptUtils.getIndentation(template, FEEDBACK_SECTION);
+    private static String appendSectionListWithHeader(String template, JsonNode node, String sectionKey,
+                                                      String sectionHeader, String listIndentation) {
+        if (node.hasNonNull(sectionKey) && node.get(sectionKey).isArray() && !node.get(sectionKey).isEmpty()) {
+            StringBuilder builder = new StringBuilder(sectionHeader + "\n");
+            int number = 1;
 
-            for (JsonNode feedback : node.get(FEEDBACK_FIELD)) {
-                feedbackBuilder.append(String.format("%s%d. %s%n", indentation, feedbackNumber++, feedback.asText()));
+            for (JsonNode feedback : node.get(sectionKey)) {
+                builder.append(String.format("%s%d. %s%n", listIndentation, number++, feedback.asText()));
             }
-            return template.replace(FEEDBACK_SECTION, feedbackBuilder.toString().trim());
+            return template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", builder.toString().trim());
         } else {
-            if (startingNumber == 1) {
-                template = template.replace(SUGGESTIONS_HEADER, "");
-            }
-            return template.replace(FEEDBACK_SECTION, "");
+            return template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
         }
     }
 
