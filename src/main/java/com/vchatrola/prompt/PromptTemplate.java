@@ -149,7 +149,7 @@ public class PromptTemplate {
         String indentation = PromptUtils.getIndentation(SCENARIO_TEMPLATE, "{STRUCTURE_SECTION}");
         return "**Structure (Mandatory):**" +
                 "\n" + indentation + PromptUtils.generateSpaces(5) +
-                "* The %s step should follow one of the following recommended formats:";
+                "* The %s step must follow one of the following recommended formats:";
     }
 
 }
