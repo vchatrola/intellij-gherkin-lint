@@ -7,13 +7,12 @@
     "For valid lines, provide insights or potential completions to enhance the script."
   ],
   "REQUIREMENTS": [
-    "The structure is mandatory. Deviations allowed with explanation of recommended structure.",
-    "Ensure that for multiple Given, When, or Then statements, the user connects them using 'And' instead of repeating the keywords.",
     "Steps should be clear, concise, sound like plain English, declarative (what happens) rather than imperative (how to do it) and avoid technical jargon or implementation details.",
     "Steps must follow Given -> When -> Then order and cannot repeat. A Given cannot follow a When or Then, and a When cannot follow a Then.",
-    "Limit scenarios to 2-3 'And' steps per Given/When/Then. Split into multiple scenarios for clarity if needed.",
     "If scenarios share steps, define them in Background or Before sections for reuse.",
-    "Gherkin does not support an 'Or' step. Use separate scenarios for alternative actions."
+    "Limit scenarios to 2-3 'And' steps per Given/When/Then. Split into multiple scenarios for clarity if needed.",
+    "Ensure that for multiple Given, When, or Then statements, the user connects them using 'And' instead of repeating the keywords.",
+    "Ensure steps do not include an 'Or' step. Suggest using separate scenarios to represent alternative actions."
   ],
   "PERSPECTIVE": "third-person (i.e. Valid: The user logs in to the system. Invalid: I log in to the system.)",
   "SCENARIO": {
@@ -25,15 +24,10 @@
     "feedback": [],
     "examples": {
       "valid": [
-        "Scenario: User logs in successfully",
-        "Scenario: Admin creates a new user",
         "Scenario: User updates profile information",
         "Scenario: User receives a password reset email",
-        "Scenario: User adds item to cart",
-        "Scenario: Guest user views product details",
-        "Scenario: User searches for a product by name",
         "Scenario: Admin deletes a user account",
-        "Scenario: User changes password",
+        "Scenario: User searches for a product by name",
         "Scenario: User checks out with multiple items"
       ],
       "invalid": [
@@ -43,8 +37,8 @@
           "suggestion": "Scenario: User logs in successfully"
         },
         {
-          "example": "Scenario: When the user clicks login button",
-          "reason": "Contains implementation detail and implies a sequence step.",
+          "example": "Scenario: User login with correct credentials and sees dashboard",
+          "reason": "Too lengthy and combines multiple actions and outcomes.",
           "suggestion": "Scenario: User logs in successfully"
         },
         {
@@ -53,14 +47,14 @@
           "suggestion": "Scenario: User logs in successfully"
         },
         {
+          "example": "Scenario: When the user clicks login button",
+          "reason": "Contains implementation detail and implies a sequence step.",
+          "suggestion": "Scenario: User logs in successfully"
+        },
+        {
           "example": "Scenario: Admin creating new user account",
           "reason": "Not in present tense and lacks clarity.",
           "suggestion": "Scenario: Admin creates a new user"
-        },
-        {
-          "example": "Scenario: User login with correct credentials and sees dashboard",
-          "reason": "Too lengthy and combines multiple actions and outcomes.",
-          "suggestion": "Scenario: User logs in successfully"
         },
         {
           "example": "Scenario: Sign Up, open the Balance Screen, check balance, log off",
@@ -77,12 +71,7 @@
     "feedback": [],
     "examples": {
       "valid": [
-        "Given the user is logged in",
-        "Given the user is on the homepage",
-        "Given the shopping cart is empty",
-        "Given the admin is on the user management page",
         "Given the user has entered valid credentials",
-        "Given the user is on the product details page",
         "Given the user has items in the cart",
         "Given the system time is set to 10:00 AM",
         "Given the user has received a password reset email",
@@ -129,16 +118,11 @@
     "feedback": [],
     "examples": {
       "valid": [
-        "When the user clicks on the 'Submit' button",
-        "When the user logs out",
         "When the user adds an item to the cart",
         "When the user searches for a product",
-        "When the user updates their profile",
-        "When the user navigates to the homepage",
         "When the user resets their password",
         "When the user views the order details",
-        "When the admin deletes a user account",
-        "When the user changes their password"
+        "When the admin deletes a user account"
       ],
       "invalid": [
         {
@@ -176,16 +160,11 @@
     "feedback": [],
     "examples": {
       "valid": [
-        "Then the user should see a success message",
         "Then the cart should display the added item",
-        "Then the user should be logged out",
-        "Then the profile should be updated",
         "Then the search results should include the product",
-        "Then the user should see the homepage",
         "Then the password should be reset",
         "Then the order details should be displayed",
-        "Then the user account should be deleted",
-        "Then the password should be changed"
+        "Then the user account should be deleted"
       ],
       "invalid": [
         {

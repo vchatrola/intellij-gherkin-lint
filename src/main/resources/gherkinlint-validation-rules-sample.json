@@ -1,12 +1,18 @@
 {
-  "PERSPECTIVE": "third-person or first-person (add valid/invalid example)",
+  "PERSPECTIVE": "third-person",
   "SCENARIO": {
-    "structure": [],
+    "structure": [
+      "Scenario: {Action} {Entity}",
+      "Scenario: {Action} {Entity} when {Condition}",
+      "Scenario: {Action} {Entity} and expects {Outcome}"
+    ],
     "tense": "present tense",
     "requirements": [
       "Title must start with 'Scenario' or 'Scenario Outline' followed by a colon (:)."
     ],
-    "feedback": [],
+    "feedback": [
+      "Ensure each scenario captures a distinct and meaningful user interaction or system behavior."
+    ],
     "examples": {
       "valid": [
         "Scenario: Admin creates a new user"
@@ -21,12 +27,18 @@
     }
   },
   "GIVEN": {
-    "structure": [],
+    "structure": [
+      "Given {Entity} is in {State}",
+      "Given {Entity1} and {Entity2} are {State}\n",
+      "Given {Entity} exists"
+    ],
     "tense": "present tense or present perfect tenses (ideally passive voice)",
     "requirements": [
       "Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs."
     ],
-    "feedback": [],
+    "feedback": [
+      "Ensure Given step provides clear and concise context to establish the initial state of the system or preconditions for the scenario."
+    ],
     "examples": {
       "valid": [
         "Given the user is logged in"
@@ -41,12 +53,18 @@
     }
   },
   "WHEN": {
-    "structure": [],
+    "structure": [
+      "When {User} {Action}",
+      "When {Event} occurs",
+      "When {User} {Action} if {Condition}"
+    ],
     "tense": "present tense",
     "requirements": [
       "When step should describe the action or event directly related to the scenario's goal that triggers the scenario."
     ],
-    "feedback": [],
+    "feedback": [
+      "Remind users that When steps describe actions being undertaken in the current context."
+    ],
     "examples": {
       "valid": [
         "When the user clicks on the 'Submit' button"
@@ -56,22 +74,23 @@
           "example": "When the user will click on the 'Submit' button",
           "reason": "Uses future tense instead of present tense.",
           "suggestion": "When the user clicks on the 'Submit' button"
-        },
-        {
-          "example": "When the user clicks on the 'Submit' button and sees the confirmation message",
-          "reason": "Combines action and outcome in one step.",
-          "suggestion": "When the user clicks on the 'Submit' button"
         }
       ]
     }
   },
   "THEN": {
-    "structure": [],
+    "structure": [
+      "Then {Outcome} should be {State}",
+      "Then {Entity} should be {State}",
+      "Then {Action} is {Verified}"
+    ],
     "tense": "present tense",
     "requirements": [
       "Then step should describe the expected outcome or result of the action in the When step."
     ],
-    "feedback": [],
+    "feedback": [
+      "Verify that the 'Then' step specifies the expected outcome or result of the scenario in a clear and unambiguous manner."
+    ],
     "examples": {
       "valid": [
         "Then the user should see a success message"
@@ -81,18 +100,13 @@
           "example": "Then the user will see a success message",
           "reason": "Uses future tense instead of present tense.",
           "suggestion": "Then the user should see a success message"
-        },
-        {
-          "example": "Then success",
-          "reason": "Too vague and lacks detail.",
-          "suggestion": "Then the user should see a success message"
         }
       ]
     }
   },
   "TAG": {
     "requirements": [
-      "Tags must be prefixed with the \"@\" symbol and written in lowercase using hyphens (-) to separate words."
+      "Tags must be written in lowercase using hyphens (-) to separate words."
     ]
   },
   "ENTITIES": [
@@ -100,5 +114,13 @@
     "section",
     "cart",
     "purchase"
-  ]
+  ],
+  "META": {
+    "structure": "Provide the structure for writing the scenario or step.",
+    "tense": "Specify the tense for the scenario or step.",
+    "requirements": "List any custom requirements for writing the scenario, step or tag.",
+    "feedback": "Mention any specific aspects for which you want feedback or suggestions.",
+    "examples": "Provide valid and invalid examples. For invalid examples, include the reason and a suggested correction.",
+    "ENTITIES": "List the entities that can be used in the Gherkin scenarios. The validator will ensure that only these entities are used in the Gherkin code."
+  }
 }
