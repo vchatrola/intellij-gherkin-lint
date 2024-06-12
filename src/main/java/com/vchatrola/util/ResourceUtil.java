@@ -48,7 +48,7 @@ public class ResourceUtil {
 
         try {
             String targetFilePath = buildTargetFilePath(directoryPath);
-            ResourceUtil.copyResourceToFile("gherkinlint-validation-rules-sample.json", targetFilePath);
+            ResourceUtil.copyResourceToFile("gherkinlint-rules-sample.json", targetFilePath);
             GherkinLintLogger.info("Sample file copied successfully to: " + targetFilePath);
             JOptionPane.showMessageDialog(null, "Sample file copied successfully", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -60,7 +60,7 @@ public class ResourceUtil {
     }
 
     private static String buildTargetFilePath(String directoryPath) {
-        return directoryPath + "/gherkinlint-validation-rules-sample.json";
+        return directoryPath + "/gherkinlint-rules-sample.json";
     }
 
 

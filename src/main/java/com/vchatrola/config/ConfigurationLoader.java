@@ -14,10 +14,10 @@ public class ConfigurationLoader {
     public JsonNode loadDefaultConfiguration() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(
-                "default-validation-rules.json")) {
+                "default-rules.json")) {
             if (inputStream == null) {
                 GherkinLintLogger.error("Failed to load default configuration file from classpath: " +
-                        "default-validation-rules.json");
+                        "default-rules.json");
                 throw new FileNotFoundException("Default configuration file not found in classpath");
             }
             return mapper.readTree(inputStream);
