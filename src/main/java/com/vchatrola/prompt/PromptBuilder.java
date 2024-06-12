@@ -275,7 +275,7 @@ public class PromptBuilder {
         JsonNode examplesNode = parentNode.get(EXAMPLES_FIELD);
 
         if (examplesNode.hasNonNull(VALID_FIELD) && examplesNode.get(VALID_FIELD).isArray() && !examplesNode.get(VALID_FIELD).isEmpty()) {
-            StringBuilder validExamplesBuilder = new StringBuilder("* **Good Example:**\n");
+            StringBuilder validExamplesBuilder = new StringBuilder("* **Good Examples:**\n");
             String indentation = PromptUtils.getIndentation(template, VALID_EXAMPLES_SECTION) + PromptUtils.generateSpaces(4);
             int number = 1;
             for (JsonNode validExample : examplesNode.get(VALID_FIELD)) {
@@ -288,7 +288,7 @@ public class PromptBuilder {
         }
 
         if (examplesNode.hasNonNull(INVALID_FIELD) && examplesNode.get(INVALID_FIELD).isArray() && !examplesNode.get(INVALID_FIELD).isEmpty()) {
-            StringBuilder invalidExamplesBuilder = new StringBuilder("* **Bad Example:**\n");
+            StringBuilder invalidExamplesBuilder = new StringBuilder("* **Bad Examples:**\n");
             String indentation = PromptUtils.getIndentation(template, INVALID_EXAMPLES_SECTION) + PromptUtils.generateSpaces(4);
             int number = 1;
             for (JsonNode invalidExample : examplesNode.get(INVALID_FIELD)) {
