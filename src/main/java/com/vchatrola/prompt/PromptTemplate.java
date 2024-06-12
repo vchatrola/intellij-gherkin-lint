@@ -115,15 +115,15 @@ public class PromptTemplate {
             """;
 
     public static final String GENERIC_PROMPT_CUCUMBER = """
-            Ensure that the Gherkin syntax is validated based on the best Cucumber BDD recommended format.
+            Ensure adherence to the best Cucumber Gherkin practices when the provided guidelines are insufficient.
             """;
 
     public static final String GENERIC_PROMPT_JBEHAVE = """
-            Ensure that the Gherkin syntax is validated based on the best JBehave BDD recommended format.
+            Ensure adherence to the best JBehave Gherkin practices when the provided guidelines are insufficient.
             """;
 
     public static final String GENERIC_PROMPT_BOTH = """
-            Ensure that the Gherkin syntax is validated based on the best Cucumber BDD or JBehave BDD recommended format.
+            Ensure adherence to the best Gherkin practices when the provided guidelines are insufficient.
             """;
 
     public static final String PERSPECTIVE_REQUIREMENT = "All the steps must be written in the %s point of view.";

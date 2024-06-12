@@ -62,11 +62,9 @@ public class PromptBuilder {
             tasksBuilder.append(taskNumber++).append(". ").append(entitiesTask).append("\n");
         }
 
-        // If default validation is enabled, generate a generic prompt for the tasks list.
-        // Uncomment this section if we decide to use default validation in the future.
-//        if (isDefaultValidation) {
-//            tasksBuilder.append(taskNumber++).append(". ").append(getGenericPrompt()).append("\n");
-//        }
+        if (isDefaultValidation) {
+            tasksBuilder.append(taskNumber++).append(". ").append(getGenericPrompt()).append("\n");
+        }
 
         return tasksBuilder.toString();
     }
