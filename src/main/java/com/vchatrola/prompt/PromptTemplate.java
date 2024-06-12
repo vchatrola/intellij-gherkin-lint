@@ -28,7 +28,7 @@ public class PromptTemplate {
             """;
 
     public static final String GIVEN_TEMPLATE = """
-            **GIVEN STEP GUIDELINES**
+            **GIVEN GUIDELINES**
             * **Applicable Line:** Any line starting with "Given" or following a "Given" line with "And," "But," or "*".
             * **Requirements:**
                 1. Given step should describe the initial context or state that sets up the necessary conditions for the scenario before the When step action occurs.
@@ -42,7 +42,7 @@ public class PromptTemplate {
             """;
 
     public static final String WHEN_TEMPLATE = """
-            **WHEN STEP GUIDELINES**
+            **WHEN GUIDELINES**
             * **Applicable Line:** Any line starting with "When" or following a "When" line with "And," "But," or "*".
             * **Requirements:**
                 1. When steps should describe the action or event directly related to the scenario's goal, ensuring focus on actions being taken in the current context.
@@ -56,7 +56,7 @@ public class PromptTemplate {
             """;
 
     public static final String THEN_TEMPLATE = """
-            **THEN STEP GUIDELINES**
+            **THEN GUIDELINES**
             * **Applicable Line:** Any line starting with "Then" or following a "Then" line with "And," "But," or "*".
             * **Requirements:**
                 1. Then step should describe the expected outcome or result, corresponding to the action performed in the preceding When step.
@@ -81,19 +81,15 @@ public class PromptTemplate {
             """;
 
     public static final String OUTPUT_FORMAT_JSON = """
-            **VALIDATION REPORT FORMAT (JSON STRUCTURE):**
-            * The output for the Gherkin validation report must be structured as a JSON array containing objects for each line (Scenario or step) in the Gherkin syntax, parseable by standard Java JSON parsing libraries like Jackson.
-            * Each object will have the following properties:
+            **VALIDATION REPORT FORMAT**
+            * The output must be a JSON array with objects for each valid Gherkin line (Scenario, step or tag) in the input, excluding empty lines and example tables, and must be compatible with standard Java JSON libraries.
+            * Each object must have the following properties:
                 1. **title (string, required):** The title of the line. For Scenario lines, it should be the scenario name; for Given, When, Then, And, But, Meta, *,  steps, it should be the actual step text.
                 2. **status (string, required):** Must be either "Valid" or "Invalid", indicating the validation result for the line.
                 3. **reason (string, required):** A brief explanation for why the line is invalid. Use "NA" for valid lines.
                 4. **suggestion (string, required):**
-                    - For invalid lines:
-                        - Provide the corrected title of the line following the given standards.
-                    - For valid lines:
-                        - "Valid syntax": Indicates the line adheres to the Gherkin syntax.
-                        - "Consider refactoring": Suggests potential improvements to the line, even though it's syntactically valid (e.g., clearer wording, better keyword usage).
-                        - "[Specific suggestion]": Offers a tailored suggestion for improvement (e.g., "Replace 'Then' with 'And' or 'But' for a better flow").
+                    - For invalid lines: Provide the corrected line title per the guidelines.
+                    - For valid lines: Indicate adherence to Gherkin syntax and offer any improvement suggestions (e.g., clearer wording, better keyword usage).
             * **Example:**
                 ```json
                 [
