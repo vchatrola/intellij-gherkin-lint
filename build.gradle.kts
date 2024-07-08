@@ -27,7 +27,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.+")
 
     // Adding other Jackson dependencies explicitly
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.17.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.17.2")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
