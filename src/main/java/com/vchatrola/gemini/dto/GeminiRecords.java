@@ -27,7 +27,8 @@ public class GeminiRecords {
     }
 
     public record GeminiResponse(List<Candidate> candidates,
-                                 PromptFeedback promptFeedback) {
+                                 PromptFeedback promptFeedback,
+                                 UsageMetadata usageMetadata) {
         public record Candidate(Content content,
                                 String finishReason,
                                 int index,
@@ -35,6 +36,11 @@ public class GeminiRecords {
             public record Content(List<TextPart> parts, String role) {
             }
         }
+    }
+
+    public record UsageMetadata(int promptTokenCount,
+                                int candidatesTokenCount,
+                                int totalTokenCount) {
     }
 
     public record SafetyRating(String category, String probability) {

@@ -21,8 +21,14 @@ public interface GeminiInterface {
             @PathVariable String model,
             @RequestBody GeminiRequest request);
 
+    @PostExchange(":countTokens")
+    GeminiCountResponse countTokensDefault(@RequestBody GeminiRequest request);
+
     @PostExchange("{model}:generateContent")
     GeminiResponse getCompletion(
             @PathVariable String model,
             @RequestBody GeminiRequest request);
+
+    @PostExchange(":generateContent")
+    GeminiResponse getCompletionDefault(@RequestBody GeminiRequest request);
 }

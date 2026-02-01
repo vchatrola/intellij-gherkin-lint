@@ -24,6 +24,8 @@ public class AppConfig {
             if (apiKey == null) {
                 GherkinLintLogger.warn("google.api.key property not found. Ensure it's properly configured in the " +
                         "environment variables.");
+            } else {
+                GherkinLintLogger.info("google.api.key loaded (masked): " + maskApiKey(apiKey));
             }
 
             GherkinLintLogger.info("Creating RestClient with baseUrl: " + baseUrl);
@@ -43,6 +45,16 @@ public class AppConfig {
             GherkinLintLogger.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);
         }
+    }
+
+    private static String maskApiKey(String apiKey) {
+        String trimmed = apiKey.trim();
+        if (trimmed.isEmpty()) {
+            return "<empty>";
+        }
+        int keep = Math.min(4, trimmed.length());
+        String suffix = trimmed.substring(trimmed.length() - keep);
+        return "****" + suffix + " (len=" + trimmed.length() + ")";
     }
 
     @Bean

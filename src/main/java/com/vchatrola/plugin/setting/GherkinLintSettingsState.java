@@ -6,6 +6,9 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @State(
         name = "com.vchatrola.plugin.setting.GherkinLintSettingsState",
         storages = @Storage("GherkinLintSettings.xml")
@@ -15,6 +18,9 @@ public final class GherkinLintSettingsState implements PersistentStateComponent<
     public boolean customLogicEnabled = false;
     public String customFilePath = "";
     public String copyDirectoryPath = "";
+    public String geminiModel = "";
+    public List<String> geminiModels = new ArrayList<>();
+    public long geminiModelsFetchedAt = 0L;
 
     @Override
     public @NotNull GherkinLintSettingsState getState() {
@@ -26,6 +32,9 @@ public final class GherkinLintSettingsState implements PersistentStateComponent<
         this.customLogicEnabled = state.customLogicEnabled;
         this.customFilePath = state.customFilePath;
         this.copyDirectoryPath = state.copyDirectoryPath;
+        this.geminiModel = state.geminiModel;
+        this.geminiModels = state.geminiModels != null ? new ArrayList<>(state.geminiModels) : new ArrayList<>();
+        this.geminiModelsFetchedAt = state.geminiModelsFetchedAt;
     }
 
     public static GherkinLintSettingsState getInstance() {
@@ -38,6 +47,18 @@ public final class GherkinLintSettingsState implements PersistentStateComponent<
 
     public String getCopyDirectoryPath() {
         return copyDirectoryPath;
+    }
+
+    public String getGeminiModel() {
+        return geminiModel;
+    }
+
+    public List<String> getGeminiModels() {
+        return geminiModels;
+    }
+
+    public long getGeminiModelsFetchedAt() {
+        return geminiModelsFetchedAt;
     }
 
     public boolean isCustomLogicEnabled() {

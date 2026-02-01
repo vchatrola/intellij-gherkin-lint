@@ -3,6 +3,8 @@ package com.vchatrola.plugin.action;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -112,13 +114,14 @@ public class GherkinLintAction extends AnAction {
             JsonNode jsonNode = configurationManager.getFinalConfiguration();
             PromptBuilder promptBuilder = new PromptBuilder(jsonNode, fileType);
             String prompt = promptBuilder.buildPrompt(selectedText, !settingsManager.isCustomLogicEnabled());
-            runValidationTask(project, consoleView, prompt);
+            String selectedModel = settingsManager.getGeminiModel();
+            runValidationTask(project, consoleView, prompt, selectedModel);
         } catch (IOException e) {
             reportError(consoleView, Constants.UNKNOWN_ERROR, e.getMessage());
         }
     }
 
-    private void runValidationTask(@Nullable Project project, ConsoleView consoleView, String prompt) {
+    private void runValidationTask(@Nullable Project project, ConsoleView consoleView, String prompt, @Nullable String model) {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Validating gherkin text") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -132,7 +135,7 @@ public class GherkinLintAction extends AnAction {
                         return;
                     }
 
-                    response = service.getCompletion(prompt);
+                    response = service.getCompletion(prompt, model);
                     GherkinLintLogger.debug("Original Gemini response: " + response);
                     if (StringUtils.isBlank(response)) {
                         reportError(consoleView, Constants.NO_GEMINI_SERVICE_RESPONSE_ERROR,
@@ -150,6 +153,18 @@ public class GherkinLintAction extends AnAction {
                     handleValidResponseAsync(indicator, finalResponse, consoleView);
                 } catch (Exception ex) {
                     reportError(consoleView, Constants.UNKNOWN_ERROR, ex.getMessage());
+                    String message = ex.getMessage();
+                    if (ex instanceof IllegalStateException
+                            && message != null
+                            && message.contains("No Gemini models available")) {
+                        notifyError(project,
+                                "Gemini models unavailable",
+                                "Could not load models from Gemini. Check API key and connectivity.");
+                    } else if (isRateLimitError(message)) {
+                        notifyError(project,
+                                "Gemini rate limit exceeded",
+                                "Request quota exceeded. Try again later or check your Gemini usage limits.");
+                    }
                 }
             }
         });
@@ -202,6 +217,22 @@ public class GherkinLintAction extends AnAction {
     private void reportError(ConsoleView consoleView, String errorMessage, @Nullable String additionalInfo) {
         GherkinLintLogger.error(errorMessage + (additionalInfo != null ? ": " + additionalInfo : ""));
         consoleView.print(errorMessage, ConsoleViewContentType.ERROR_OUTPUT);
+    }
+
+    private void notifyError(@Nullable Project project, String title, String message) {
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("GherkinLint")
+                .createNotification(title, message, NotificationType.ERROR)
+                .notify(project);
+    }
+
+    private boolean isRateLimitError(@Nullable String message) {
+        if (message == null) {
+            return false;
+        }
+        return message.contains("429")
+                || message.contains("RESOURCE_EXHAUSTED")
+                || message.toLowerCase().contains("rate limit");
     }
 
     private boolean isEmptyOrInvalidText(String text, ConsoleView consoleView) {
