@@ -6,10 +6,6 @@ import com.vchatrola.util.GherkinLintLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -94,45 +90,9 @@ public class GeminiService {
     }
 
 
-    public GeminiResponse getCompletionWithImage(GeminiRequest request) {
-        String resolvedModel = resolveModelOrThrow(null);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, request);
-        logUsageMetadata(response);
-        return response;
-    }
-
-    public GeminiResponse analyzeImage(GeminiRequest request) {
-        String resolvedModel = resolveModelOrThrow(null);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, request);
-        logUsageMetadata(response);
-        return response;
-    }
-
     public String getCompletion(String text, String model) {
         GeminiResponse response = getCompletionWithModel(model, new GeminiRequest(
                 List.of(new Content(List.of(new TextPart(text))))));
-        return response.candidates().get(0).content().parts().get(0).text();
-    }
-
-    public String getCompletionWithImage(String text, String imageFileName, String model) throws IOException {
-        GeminiResponse response = getCompletionWithModel(model,
-                new GeminiRequest(List.of(new Content(List.of(
-                        new TextPart(text),
-                        new InlineDataPart(new InlineData("image/png",
-                                Base64.getEncoder().encodeToString(Files.readAllBytes(
-                                        Path.of("src/main/resources/", imageFileName))))))
-                ))));
-        return response.candidates().get(0).content().parts().get(0).text();
-    }
-
-    public String analyzeImage(String text, String imageFileName, String model) throws IOException {
-        GeminiResponse response = getCompletionWithModel(model,
-                new GeminiRequest(List.of(new Content(List.of(
-                        new TextPart(text),
-                        new InlineDataPart(new InlineData("image/png",
-                                Base64.getEncoder().encodeToString(Files.readAllBytes(
-                                        Path.of("src/main/resources/", imageFileName))))))
-                ))));
         return response.candidates().get(0).content().parts().get(0).text();
     }
 
