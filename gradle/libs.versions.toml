@@ -4,7 +4,7 @@ annotations = "24.1.0"
 
 # plugins
 changelog = "2.2.0"
-gradleIntelliJPlugin = "1.17.2"
+intellijPlatform = "2.11.0"
 qodana = "2023.3.1"
 
 [libraries]
@@ -12,5 +12,5 @@ annotations = { group = "org.jetbrains", name = "annotations", version.ref = "an
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
-gradleIntelliJPlugin = { id = "org.jetbrains.intellij", version.ref = "gradleIntelliJPlugin" }
+intellijPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intellijPlatform" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
