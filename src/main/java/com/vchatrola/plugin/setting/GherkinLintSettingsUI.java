@@ -35,6 +35,9 @@ public class GherkinLintSettingsUI {
     private final JBLabel quotaStatusLabel;
     private final JBLabel modelFetchWarningLabel;
     private final JBLabel modelFetchedAtLabel;
+    private final JPasswordField apiKeyField;
+    private final JBLabel apiKeyStatusLabel;
+    private final JButton clearApiKeyButton;
     private final JBLabel instructionsLabel;
     private final Map<String, GeminiRecords.Model> modelDetailsByName = new HashMap<>();
     private final List<String> modelOrder = new ArrayList<>();
@@ -53,6 +56,9 @@ public class GherkinLintSettingsUI {
         quotaStatusLabel = createQuotaStatusLabel();
         modelFetchWarningLabel = createModelFetchWarningLabel();
         modelFetchedAtLabel = createModelFetchedAtLabel();
+        apiKeyField = createApiKeyField();
+        apiKeyStatusLabel = createApiKeyStatusLabel();
+        clearApiKeyButton = createClearApiKeyButton();
         instructionsLabel = createInstructionsLabel();
 
         // Add components to form panel using FormBuilder
@@ -83,6 +89,14 @@ public class GherkinLintSettingsUI {
                 .addComponent(modelDetailsLabel)
                 .addVerticalGap(5)
                 .addComponent(quotaStatusLabel)
+                .addVerticalGap(5)
+                .addSeparator()
+                .addVerticalGap(5)
+                .addLabeledComponent("Gemini API key:", apiKeyField, 1, false)
+                .addVerticalGap(5)
+                .addComponent(createApiKeyControlRow())
+                .addVerticalGap(5)
+                .addComponent(apiKeyStatusLabel)
                 .addVerticalGap(5)
                 .addSeparator()
                 .addVerticalGap(5)
@@ -189,6 +203,39 @@ public class GherkinLintSettingsUI {
         JBLabel label = new JBLabel("Models last fetched: never");
         label.setForeground(JBColor.GRAY);
         return label;
+    }
+
+    private JPasswordField createApiKeyField() {
+        JPasswordField field = new JPasswordField();
+        field.setColumns(30);
+        return field;
+    }
+
+    private JBLabel createApiKeyStatusLabel() {
+        JBLabel label = new JBLabel(getApiKeyStatusText());
+        label.setForeground(JBColor.GRAY);
+        return label;
+    }
+
+    private String getApiKeyStatusText() {
+        return GherkinLintSecrets.hasApiKey()
+                ? "API key stored securely in IDE."
+                : "No API key stored. Environment variable GOOGLE_API_KEY will be used if set.";
+    }
+
+    private JButton createClearApiKeyButton() {
+        JButton button = new JButton("Clear Stored Key");
+        button.addActionListener(e -> {
+            GherkinLintSecrets.saveApiKey("");
+            resetApiKeyField();
+        });
+        return button;
+    }
+
+    private JComponent createApiKeyControlRow() {
+        JPanel panel = new JBPanel<>(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        panel.add(clearApiKeyButton);
+        return panel;
     }
 
     private JComponent createModelControlRow() {
@@ -357,6 +404,15 @@ public class GherkinLintSettingsUI {
     public void setCustomLogicEnabled(boolean enabled) {
         customLogicCheckBox.setSelected(enabled);
         updateComponentStates(enabled);
+    }
+
+    public String getApiKey() {
+        return new String(apiKeyField.getPassword()).trim();
+    }
+
+    public void resetApiKeyField() {
+        apiKeyField.setText("");
+        apiKeyStatusLabel.setText(getApiKeyStatusText());
     }
 
     public String getGeminiModel() {

@@ -18,21 +18,14 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 public class AppConfig {
 
     @Bean
-    public RestClient geminiRestClient(@Value("${gemini.baseurl}") String baseUrl,
-                                       @Value("${google.api.key}") String apiKey) {
+    public RestClient geminiRestClient(@Value("${gemini.baseurl}") String baseUrl) {
         try {
-            if (apiKey == null) {
-                GherkinLintLogger.warn("google.api.key property not found. Ensure it's properly configured in the " +
-                        "environment variables.");
-            } else {
-                GherkinLintLogger.info("google.api.key loaded (masked): " + maskApiKey(apiKey));
-            }
+            GherkinLintLogger.info("Gemini API key will be provided per request.");
 
             GherkinLintLogger.info("Creating RestClient with baseUrl: " + baseUrl);
 
             RestClient restClient = RestClient.builder()
                     .baseUrl(baseUrl)
-                    .defaultHeader("x-goog-api-key", apiKey)
                     .defaultHeader("Content-Type", "application/json")
                     .defaultHeader("Accept", "application/json")
                     .build();
@@ -45,16 +38,6 @@ public class AppConfig {
             GherkinLintLogger.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);
         }
-    }
-
-    private static String maskApiKey(String apiKey) {
-        String trimmed = apiKey.trim();
-        if (trimmed.isEmpty()) {
-            return "<empty>";
-        }
-        int keep = Math.min(4, trimmed.length());
-        String suffix = trimmed.substring(trimmed.length() - keep);
-        return "****" + suffix + " (len=" + trimmed.length() + ")";
     }
 
     @Bean

@@ -3,6 +3,7 @@ package com.vchatrola.gemini.service;
 import com.vchatrola.gemini.api.GeminiInterface;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.util.GherkinLintLogger;
+import com.vchatrola.plugin.setting.GherkinLintSecrets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class GeminiService {
     }
 
     public GeminiRecords.ModelList getModels() {
-        return geminiInterface.getModels();
+        return geminiInterface.getModels(getApiKeyOrThrow());
     }
 
     public List<GeminiRecords.Model> getAvailableModels() {
@@ -66,7 +67,7 @@ public class GeminiService {
 
     public GeminiCountResponse countTokens(String model, GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(model);
-        return geminiInterface.countTokens(resolvedModel, request);
+        return geminiInterface.countTokens(resolvedModel, getApiKeyOrThrow(), request);
     }
 
     public int countTokens(String text, String model) {
@@ -77,14 +78,14 @@ public class GeminiService {
 
     public GeminiResponse getCompletion(GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(null);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, request);
+        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, getApiKeyOrThrow(), request);
         logUsageMetadata(response);
         return response;
     }
 
     public GeminiResponse getCompletionWithModel(String model, GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(model);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, request);
+        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, getApiKeyOrThrow(), request);
         logUsageMetadata(response);
         return response;
     }
@@ -108,6 +109,14 @@ public class GeminiService {
 
     private static boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String getApiKeyOrThrow() {
+        String apiKey = GherkinLintSecrets.getApiKeyOrEnv();
+        if (isBlank(apiKey)) {
+            throw new IllegalStateException("Gemini API key is missing. Set it in settings or GOOGLE_API_KEY.");
+        }
+        return apiKey;
     }
 
     private void logUsageMetadata(GeminiResponse response) {

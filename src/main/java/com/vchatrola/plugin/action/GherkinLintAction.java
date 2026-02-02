@@ -160,6 +160,12 @@ public class GherkinLintAction extends AnAction {
                         notifyError(project,
                                 "Gemini models unavailable",
                                 "Could not load models from Gemini. Check API key and connectivity.");
+                    } else if (ex instanceof IllegalStateException
+                            && message != null
+                            && message.contains("Gemini API key is missing")) {
+                        notifyError(project,
+                                "Gemini API key missing",
+                                "Set the key in settings or GOOGLE_API_KEY, then try again.");
                     } else if (ex instanceof IllegalArgumentException
                             && message != null
                             && (message.contains("JSON") || message.contains("Gemini response"))) {

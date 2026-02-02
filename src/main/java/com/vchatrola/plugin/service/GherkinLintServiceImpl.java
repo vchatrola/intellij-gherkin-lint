@@ -18,7 +18,6 @@ public final class GherkinLintServiceImpl implements GherkinLintService, Disposa
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(GherkinLintServiceImpl.class.getClassLoader());
-
             // Initialize Spring context
             applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
             applicationContext.register(GeminiService.class);

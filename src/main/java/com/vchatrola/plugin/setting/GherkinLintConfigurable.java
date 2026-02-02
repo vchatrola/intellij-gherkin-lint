@@ -26,10 +26,12 @@ public class GherkinLintConfigurable implements Configurable {
     @Override
     public boolean isModified() {
         GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
+        String apiKey = gherkinLintSettingsUI.getApiKey();
         return settings.isCustomLogicEnabled() != gherkinLintSettingsUI.isCustomLogicEnabled()
                 || !settings.getCustomFilePath().equals(gherkinLintSettingsUI.getCustomFilePath())
                 || !settings.getCopyDirectoryPath().equals(gherkinLintSettingsUI.getCopyDirectoryPath())
-                || !settings.getGeminiModel().equals(gherkinLintSettingsUI.getGeminiModel());
+                || !settings.getGeminiModel().equals(gherkinLintSettingsUI.getGeminiModel())
+                || !apiKey.isEmpty();
     }
 
     @Override
@@ -39,6 +41,11 @@ public class GherkinLintConfigurable implements Configurable {
         settings.customFilePath = gherkinLintSettingsUI.getCustomFilePath();
         settings.copyDirectoryPath = gherkinLintSettingsUI.getCopyDirectoryPath();
         settings.geminiModel = gherkinLintSettingsUI.getGeminiModel();
+        String apiKey = gherkinLintSettingsUI.getApiKey();
+        if (!apiKey.isEmpty()) {
+            GherkinLintSecrets.saveApiKey(apiKey);
+        }
+        gherkinLintSettingsUI.resetApiKeyField();
     }
 
     @Override
@@ -48,6 +55,7 @@ public class GherkinLintConfigurable implements Configurable {
         gherkinLintSettingsUI.setCustomFilePath(settings.customFilePath);
         gherkinLintSettingsUI.setCopyDirectoryPath(settings.copyDirectoryPath);
         gherkinLintSettingsUI.setGeminiModel(settings.geminiModel);
+        gherkinLintSettingsUI.resetApiKeyField();
     }
 
     @Override
