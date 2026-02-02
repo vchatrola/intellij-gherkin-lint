@@ -37,7 +37,11 @@ public class GherkinLintConfigurable implements Configurable {
     @Override
     public void apply() {
         GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
-        settings.customLogicEnabled = gherkinLintSettingsUI.isCustomLogicEnabled();
+        boolean customEnabled = gherkinLintSettingsUI.isCustomLogicEnabled();
+        if (customEnabled && gherkinLintSettingsUI.getCustomFilePath().trim().isEmpty()) {
+            customEnabled = false;
+        }
+        settings.customLogicEnabled = customEnabled;
         settings.customFilePath = gherkinLintSettingsUI.getCustomFilePath();
         settings.copyDirectoryPath = gherkinLintSettingsUI.getCopyDirectoryPath();
         settings.geminiModel = gherkinLintSettingsUI.getGeminiModel();
@@ -46,6 +50,8 @@ public class GherkinLintConfigurable implements Configurable {
             GherkinLintSecrets.saveApiKey(apiKey);
         }
         gherkinLintSettingsUI.resetApiKeyField();
+        gherkinLintSettingsUI.setCustomLogicEnabled(customEnabled);
+        gherkinLintSettingsUI.updateCustomRulesWarning();
     }
 
     @Override

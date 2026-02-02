@@ -1,9 +1,10 @@
 package com.vchatrola.plugin.setting;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
@@ -11,10 +12,11 @@ import com.intellij.util.ui.FormBuilder;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.gemini.service.GeminiService;
 import com.vchatrola.plugin.service.GherkinLintServiceImpl;
-import com.vchatrola.plugin.setting.GherkinLintSettingsState;
 import com.vchatrola.util.ResourceUtil;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ public class GherkinLintSettingsUI {
     private final TextFieldWithBrowseButton copyDirectoryField;
     private final TextFieldWithBrowseButton customFileField;
     private final JButton copyButton;
+    private final JBLabel customRulesWarningLabel;
     private final JComboBox<ModelOption> modelComboBox;
     private final JButton loadModelsButton;
     private final JButton refreshModelsButton;
@@ -35,6 +38,7 @@ public class GherkinLintSettingsUI {
     private final JBLabel quotaStatusLabel;
     private final JBLabel modelFetchWarningLabel;
     private final JBLabel modelFetchedAtLabel;
+    private final JComponent modelInfoPanel;
     private final JPasswordField apiKeyField;
     private final JBLabel apiKeyStatusLabel;
     private final JButton clearApiKeyButton;
@@ -48,6 +52,7 @@ public class GherkinLintSettingsUI {
         copyDirectoryField = createCopyDirectoryField();
         customFileField = createCustomFileField();
         copyButton = createCopyButton();
+        customRulesWarningLabel = createCustomRulesWarningLabel();
         modelComboBox = createModelComboBox();
         loadModelsButton = createLoadModelsButton();
         refreshModelsButton = createRefreshModelsButton();
@@ -56,6 +61,7 @@ public class GherkinLintSettingsUI {
         quotaStatusLabel = createQuotaStatusLabel();
         modelFetchWarningLabel = createModelFetchWarningLabel();
         modelFetchedAtLabel = createModelFetchedAtLabel();
+        modelInfoPanel = createModelInfoPanel();
         apiKeyField = createApiKeyField();
         apiKeyStatusLabel = createApiKeyStatusLabel();
         clearApiKeyButton = createClearApiKeyButton();
@@ -63,50 +69,58 @@ public class GherkinLintSettingsUI {
 
         // Add components to form panel using FormBuilder
         JPanel formPanel = FormBuilder.createFormBuilder()
+                .addComponent(new TitledSeparator("Gemini API"))
+                .addVerticalGap(4)
+                .addLabeledComponent("API key:", apiKeyField, 1, false)
+                .addVerticalGap(4)
+                .addComponent(createApiKeyControlRow())
+                .addVerticalGap(4)
+                .addComponent(apiKeyStatusLabel)
+                .addVerticalGap(8)
+                .addComponent(new TitledSeparator("Custom Rules"))
+                .addVerticalGap(4)
                 .addComponent(customLogicCheckBox)
                 .addVerticalGap(5)
-                .addSeparator()
-                .addVerticalGap(5)
                 .addLabeledComponent("Custom rules file:", customFileField, 1, false)
-                .addVerticalGap(5)
-                .addLabeledComponent("Copy sample file to:", copyDirectoryField, 1,
-                        false)
-                .addVerticalGap(5)
+                .addVerticalGap(4)
+                .addComponent(customRulesWarningLabel)
+                .addVerticalGap(4)
+                .addLabeledComponent("Copy sample file to:", copyDirectoryField, 1, false)
+                .addVerticalGap(4)
                 .addComponent(copyButton)
-                .addVerticalGap(5)
-                .addSeparator()
-                .addVerticalGap(5)
-                .addLabeledComponent("Gemini model:", modelComboBox, 1, false)
-                .addVerticalGap(5)
-                .addComponent(createModelControlRow())
-                .addVerticalGap(5)
-                .addComponent(modelFetchWarningLabel)
-                .addVerticalGap(5)
-                .addComponent(modelFetchedAtLabel)
-                .addVerticalGap(5)
-                .addComponent(modelStatusLabel)
-                .addVerticalGap(5)
-                .addComponent(modelDetailsLabel)
-                .addVerticalGap(5)
-                .addComponent(quotaStatusLabel)
-                .addVerticalGap(5)
-                .addSeparator()
-                .addVerticalGap(5)
-                .addLabeledComponent("Gemini API key:", apiKeyField, 1, false)
-                .addVerticalGap(5)
-                .addComponent(createApiKeyControlRow())
-                .addVerticalGap(5)
-                .addComponent(apiKeyStatusLabel)
-                .addVerticalGap(5)
-                .addSeparator()
-                .addVerticalGap(5)
+                .addVerticalGap(8)
                 .addComponent(instructionsLabel)
+                .addVerticalGap(8)
+                .addComponent(new TitledSeparator("Model Selection"))
+                .addVerticalGap(4)
+                .addLabeledComponent("Gemini model:", modelComboBox, 1, false)
+                .addVerticalGap(4)
+                .addComponent(createModelControlRow())
+                .addVerticalGap(4)
+                .addComponent(modelInfoPanel)
+                .addVerticalGap(8)
                 .getPanel();
 
         panel.add(formPanel, BorderLayout.NORTH);
 
         // Update component states based on checkbox selection
         customLogicCheckBox.addActionListener(e -> updateComponentStates(customLogicCheckBox.isSelected()));
+        customFileField.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateCustomRulesWarning();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateCustomRulesWarning();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateCustomRulesWarning();
+            }
+        });
     }
 
     private JBCheckBox createCustomLogicCheckBox() {
@@ -143,11 +157,18 @@ public class GherkinLintSettingsUI {
         return button;
     }
 
+    private JBLabel createCustomRulesWarningLabel() {
+        JBLabel label = new JBLabel("Custom rules file is required when custom validation is enabled.");
+        label.setForeground(JBColor.RED);
+        label.setVisible(false);
+        return label;
+    }
+
     private JBLabel createInstructionsLabel() {
         JBLabel label = new JBLabel("<html><body style='width: 400px'>" +
-                "1. Enable custom validation.<br>" +
-                "2. Copy the sample file to your directory and modify it as needed.<br>" +
-                "3. Specify the path to your custom rules file.</body></html>");
+                "Custom rules let you enforce your team’s Gherkin style. " +
+                "Enable custom validation, copy the sample file, edit it, and select it above." +
+                "</body></html>");
         label.setForeground(JBColor.GRAY);
         return label;
     }
@@ -176,33 +197,54 @@ public class GherkinLintSettingsUI {
     }
 
     private JBLabel createModelStatusLabel() {
-        JBLabel label = new JBLabel("Models are not loaded yet. Using Auto by default.");
+        JBLabel label = new JBLabel("Models not loaded; Auto will be used.");
         label.setForeground(JBColor.GRAY);
         return label;
     }
 
     private JBLabel createModelDetailsLabel() {
-        JBLabel label = new JBLabel("Model limits: unavailable (models not loaded).");
+        JBLabel label = new JBLabel("Model limits unavailable until loaded.");
         label.setForeground(JBColor.GRAY);
         return label;
     }
 
     private JBLabel createQuotaStatusLabel() {
-        JBLabel label = new JBLabel("Quota remaining: not available via API. Check Google AI Studio usage.");
+        JBLabel label = new JBLabel("Quota remaining isn’t shown here.");
         label.setForeground(JBColor.GRAY);
         return label;
     }
 
     private JBLabel createModelFetchWarningLabel() {
-        JBLabel label = new JBLabel("Loading models makes an API call and uses quota.");
+        JBLabel label = new JBLabel("Loading models uses API quota.");
         label.setForeground(JBColor.GRAY);
         return label;
     }
 
     private JBLabel createModelFetchedAtLabel() {
-        JBLabel label = new JBLabel("Models last fetched: never");
+        JBLabel label = new JBLabel("Last fetched: never");
         label.setForeground(JBColor.GRAY);
         return label;
+    }
+
+    private JComponent createModelInfoPanel() {
+        JPanel panel = new JBPanel<>(new GridBagLayout());
+        GridBagConstraints row = new GridBagConstraints();
+        row.gridx = 0;
+        row.weightx = 1.0;
+        row.anchor = GridBagConstraints.WEST;
+        row.fill = GridBagConstraints.HORIZONTAL;
+
+        row.gridy = 0;
+        panel.add(modelFetchWarningLabel, row);
+        row.gridy = 1;
+        panel.add(modelFetchedAtLabel, row);
+        row.gridy = 2;
+        panel.add(modelStatusLabel, row);
+        row.gridy = 3;
+        panel.add(modelDetailsLabel, row);
+        row.gridy = 4;
+        panel.add(quotaStatusLabel, row);
+        return panel;
     }
 
     private JPasswordField createApiKeyField() {
@@ -300,7 +342,7 @@ public class GherkinLintSettingsUI {
     private void updateModelDetails() {
         ModelOption option = (ModelOption) modelComboBox.getSelectedItem();
         if (option == null) {
-            modelDetailsLabel.setText("Model limits: unavailable (no selection).");
+            modelDetailsLabel.setText("Model limits unavailable (no selection).");
             return;
         }
 
@@ -311,7 +353,7 @@ public class GherkinLintSettingsUI {
                 GeminiRecords.Model model = modelDetailsByName.get(resolved);
                 modelDetailsLabel.setText(formatModelDetails("Auto resolves to", resolved, model));
             } else {
-                modelDetailsLabel.setText("Model limits: unavailable (models not loaded).");
+                modelDetailsLabel.setText("Model limits unavailable until loaded.");
             }
             return;
         }
@@ -359,10 +401,10 @@ public class GherkinLintSettingsUI {
 
     private void updateFetchedAtLabel(long fetchedAt) {
         if (fetchedAt <= 0L) {
-            modelFetchedAtLabel.setText("Models last fetched: never");
+            modelFetchedAtLabel.setText("Last fetched: never");
             return;
         }
-        modelFetchedAtLabel.setText("Models last fetched: " + new java.util.Date(fetchedAt));
+        modelFetchedAtLabel.setText("Last fetched: " + new java.util.Date(fetchedAt));
     }
 
     private GeminiService getGeminiService() {
@@ -375,6 +417,7 @@ public class GherkinLintSettingsUI {
         customFileField.setEnabled(selected);
         copyDirectoryField.setEnabled(selected);
         copyButton.setEnabled(selected);
+        updateCustomRulesWarning();
     }
 
     public JPanel createPanel() {
@@ -404,6 +447,11 @@ public class GherkinLintSettingsUI {
     public void setCustomLogicEnabled(boolean enabled) {
         customLogicCheckBox.setSelected(enabled);
         updateComponentStates(enabled);
+    }
+
+    public void updateCustomRulesWarning() {
+        boolean show = customLogicCheckBox.isSelected() && customFileField.getText().trim().isEmpty();
+        customRulesWarningLabel.setVisible(show);
     }
 
     public String getApiKey() {
