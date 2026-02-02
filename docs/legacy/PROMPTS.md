@@ -1,3 +1,9 @@
+## Legacy Prompts (Deprecated)
+
+This file preserves the legacy `Prompts` class for reference only.
+The plugin now uses `PromptTemplate` and the core prompt builder.
+
+```java
 package com.vchatrola.prompt;
 
 /**
@@ -195,3 +201,4 @@ public class Prompts {
                     "- The \"status\" field should strictly contain either \"Valid\" or \"Invalid\".\n";
 
 }
+```
