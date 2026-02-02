@@ -2,7 +2,11 @@ package com.vchatrola.util;
 
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.*;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -41,8 +45,7 @@ public class ResourceUtil {
     public static void copySampleFile(String directoryPath) {
         if (StringUtils.isBlank(directoryPath)) {
             GherkinLintLogger.error("Please specify a directory for the sample file.");
-            JOptionPane.showMessageDialog(null, "Please specify a directory", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            notifyUser("GherkinLint", "Please specify a directory", NotificationType.ERROR);
             return;
         }
 
@@ -50,12 +53,10 @@ public class ResourceUtil {
             String targetFilePath = buildTargetFilePath(directoryPath);
             ResourceUtil.copyResourceToFile("gherkinlint-rules-sample.json", targetFilePath);
             GherkinLintLogger.info("Sample file copied successfully to: " + targetFilePath);
-            JOptionPane.showMessageDialog(null, "Sample file copied successfully", "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
+            notifyUser("GherkinLint", "Sample file copied successfully", NotificationType.INFORMATION);
         } catch (IOException e) {
             GherkinLintLogger.error("Failed to copy sample file: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Failed to copy sample file: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            notifyUser("GherkinLint", "Failed to copy sample file: " + e.getMessage(), NotificationType.ERROR);
         }
     }
 
@@ -63,6 +64,21 @@ public class ResourceUtil {
         return directoryPath + "/gherkinlint-rules-sample.json";
     }
 
+    private static void notifyUser(String title, String message, NotificationType type) {
+        Project project = getAnyOpenProject();
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("GherkinLint")
+                .createNotification(title, message, type)
+                .notify(project);
+    }
+
+    private static Project getAnyOpenProject() {
+        Project[] projects = ProjectManager.getInstance().getOpenProjects();
+        if (projects.length > 0) {
+            return projects[0];
+        }
+        return null;
+    }
 
 }
 
