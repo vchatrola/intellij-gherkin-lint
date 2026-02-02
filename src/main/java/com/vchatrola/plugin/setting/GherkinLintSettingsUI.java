@@ -9,9 +9,12 @@ import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.FormBuilder;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.gemini.service.GeminiService;
 import com.vchatrola.plugin.service.GherkinLintServiceImpl;
+import com.vchatrola.util.GherkinLintLogger;
 import com.vchatrola.util.ResourceUtil;
 
 import javax.swing.*;
@@ -32,7 +35,6 @@ public class GherkinLintSettingsUI {
     private final JBLabel customRulesWarningLabel;
     private final JComboBox<ModelOption> modelComboBox;
     private final JButton loadModelsButton;
-    private final JButton refreshModelsButton;
     private final JBLabel modelStatusLabel;
     private final JBLabel modelDetailsLabel;
     private final JBLabel quotaStatusLabel;
@@ -54,9 +56,6 @@ public class GherkinLintSettingsUI {
         customFileField = createCustomFileField();
         copyButton = createCopyButton();
         customRulesWarningLabel = createCustomRulesWarningLabel();
-        modelComboBox = createModelComboBox();
-        loadModelsButton = createLoadModelsButton();
-        refreshModelsButton = createRefreshModelsButton();
         modelStatusLabel = createModelStatusLabel();
         modelDetailsLabel = createModelDetailsLabel();
         quotaStatusLabel = createQuotaStatusLabel();
@@ -64,10 +63,13 @@ public class GherkinLintSettingsUI {
         modelFetchedAtLabel = createModelFetchedAtLabel();
         modelCacheNoteLabel = createModelCacheNoteLabel();
         modelInfoPanel = createModelInfoPanel();
+        modelComboBox = createModelComboBox();
+        loadModelsButton = createLoadModelsButton();
         apiKeyField = createApiKeyField();
         apiKeyStatusLabel = createApiKeyStatusLabel();
         clearApiKeyButton = createClearApiKeyButton();
         instructionsLabel = createInstructionsLabel();
+        loadCachedModels(modelComboBox);
 
         // Add components to form panel using FormBuilder
         JPanel formPanel = FormBuilder.createFormBuilder()
@@ -181,18 +183,11 @@ public class GherkinLintSettingsUI {
         JComboBox<ModelOption> comboBox = new JComboBox<>();
         comboBox.addItem(ModelOption.auto());
         comboBox.addActionListener(e -> updateModelDetails());
-        loadCachedModels(comboBox);
         return comboBox;
     }
 
     private JButton createLoadModelsButton() {
-        JButton button = new JButton("Load Models");
-        button.addActionListener(e -> loadModelsAsync(modelComboBox));
-        return button;
-    }
-
-    private JButton createRefreshModelsButton() {
-        JButton button = new JButton("Refresh");
+        JButton button = new JButton("Load / Refresh Models");
         button.addActionListener(e -> {
             clearModelCache();
             loadModelsAsync(modelComboBox);
@@ -294,8 +289,6 @@ public class GherkinLintSettingsUI {
     private JComponent createModelControlRow() {
         JPanel panel = new JBPanel<>(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panel.add(loadModelsButton);
-        panel.add(Box.createHorizontalStrut(6));
-        panel.add(refreshModelsButton);
         return panel;
     }
 
@@ -309,7 +302,7 @@ public class GherkinLintSettingsUI {
             comboBox.addItem(new ModelOption(model, model));
             modelOrder.add(model);
         }
-        setModelStatus("Model list loaded from cache.");
+        setModelStatus("Model list loaded from cache.", JBColor.GRAY);
         updateFetchedAtLabel(state.getGeminiModelsFetchedAt());
         if (state.getGeminiModel().isBlank() && !modelOrder.isEmpty()) {
             comboBox.setSelectedItem(new ModelOption(modelOrder.get(0), modelOrder.get(0)));
@@ -321,12 +314,15 @@ public class GherkinLintSettingsUI {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             GeminiService service = getGeminiService();
             if (service == null) {
-                setModelStatus("Gemini service unavailable. Using Auto (server default).");
+                setModelStatus("Gemini service unavailable. Using Auto (server default).", JBColor.RED);
+                GherkinLintLogger.warn("Gemini service unavailable while loading models.");
                 return;
             }
+            GeminiService.clearCachedModels();
             List<GeminiRecords.Model> models = service.getAvailableModels();
             if (models == null || models.isEmpty()) {
-                setModelStatus("No models loaded from Gemini. Using Auto (server default).");
+                setModelStatus("No models loaded from Gemini. Using Auto (server default).", JBColor.RED);
+                GherkinLintLogger.warn("No Gemini models returned by API.");
                 return;
             }
 
@@ -341,8 +337,9 @@ public class GherkinLintSettingsUI {
                     modelOrder.add(normalizedName);
                     comboBox.addItem(new ModelOption(normalizedName, normalizedName));
                 }
-                setModelStatus("Model list loaded from Gemini.");
+                setModelStatus("Model list loaded from Gemini.", JBColor.GREEN);
                 persistModelCache(modelOrder);
+                GherkinLintLogger.info("Loaded " + modelOrder.size() + " Gemini models.");
                 if (!modelOrder.isEmpty() && isAutoSelected()) {
                     comboBox.setSelectedItem(new ModelOption(modelOrder.get(0), modelOrder.get(0)));
                 }
@@ -352,11 +349,25 @@ public class GherkinLintSettingsUI {
         });
     }
 
-    private void setModelStatus(String message) {
-        SwingUtilities.invokeLater(() -> modelStatusLabel.setText(message));
+    private void setModelStatus(String message, JBColor color) {
+        SwingUtilities.invokeLater(() -> {
+            modelStatusLabel.setText(message);
+            modelStatusLabel.setForeground(color);
+        });
+    }
+
+    private Project getAnyOpenProject() {
+        Project[] projects = ProjectManager.getInstance().getOpenProjects();
+        if (projects.length > 0) {
+            return projects[0];
+        }
+        return null;
     }
 
     private void updateModelDetails() {
+        if (modelComboBox == null) {
+            return;
+        }
         ModelOption option = (ModelOption) modelComboBox.getSelectedItem();
         if (option == null) {
             modelDetailsLabel.setText("Model limits unavailable (no selection).");
@@ -412,7 +423,7 @@ public class GherkinLintSettingsUI {
         modelComboBox.removeAllItems();
         modelComboBox.addItem(ModelOption.auto());
         updateFetchedAtLabel(0L);
-        setModelStatus("Model cache cleared. Using Auto by default.");
+        setModelStatus("Model cache cleared. Using Auto by default.", JBColor.GRAY);
         updateModelDetails();
     }
 

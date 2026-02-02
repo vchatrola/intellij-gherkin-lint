@@ -1,7 +1,5 @@
 package com.vchatrola.util;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
 
 /**
@@ -11,8 +9,8 @@ public class Constants {
 
     public static final String TOOL_WINDOW_ID = "GherkinLint";
     public static final String CONTENT_DISPLAY_NAME = "Result";
-    public static final List<String> SUPPORTED_EXTENSIONS = ImmutableList.of("story", "feature", "txt");
-    public static final List<String> GHERKIN_KEYWORDS = ImmutableList.of
+    public static final List<String> SUPPORTED_EXTENSIONS = List.of("story", "feature", "txt");
+    public static final List<String> GHERKIN_KEYWORDS = List.of
             ("Scenario", "Meta", "Given", "When", "Then", "And", "But", "*", "@");
     public static final String SCENARIO_KEYWORD = "Scenario";
     public static final String GIVEN_KEYWORD = "Given";

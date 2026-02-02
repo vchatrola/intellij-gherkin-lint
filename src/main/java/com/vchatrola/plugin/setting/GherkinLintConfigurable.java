@@ -25,6 +25,9 @@ public class GherkinLintConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
+        if (gherkinLintSettingsUI == null) {
+            return false;
+        }
         GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
         String apiKey = gherkinLintSettingsUI.getApiKey();
         return settings.isCustomLogicEnabled() != gherkinLintSettingsUI.isCustomLogicEnabled()
@@ -36,6 +39,9 @@ public class GherkinLintConfigurable implements Configurable {
 
     @Override
     public void apply() {
+        if (gherkinLintSettingsUI == null) {
+            return;
+        }
         GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
         boolean customEnabled = gherkinLintSettingsUI.isCustomLogicEnabled();
         if (customEnabled && gherkinLintSettingsUI.getCustomFilePath().trim().isEmpty()) {
@@ -48,6 +54,7 @@ public class GherkinLintConfigurable implements Configurable {
         String apiKey = gherkinLintSettingsUI.getApiKey();
         if (!apiKey.isEmpty()) {
             GherkinLintSecrets.saveApiKey(apiKey);
+            com.vchatrola.gemini.service.GeminiService.clearCachedModels();
         }
         gherkinLintSettingsUI.resetApiKeyField();
         gherkinLintSettingsUI.setCustomLogicEnabled(customEnabled);
@@ -56,6 +63,9 @@ public class GherkinLintConfigurable implements Configurable {
 
     @Override
     public void reset() {
+        if (gherkinLintSettingsUI == null) {
+            return;
+        }
         GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
         gherkinLintSettingsUI.setCustomLogicEnabled(settings.customLogicEnabled);
         gherkinLintSettingsUI.setCustomFilePath(settings.customFilePath);

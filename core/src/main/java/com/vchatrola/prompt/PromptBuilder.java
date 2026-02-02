@@ -2,8 +2,6 @@ package com.vchatrola.prompt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vchatrola.util.Constants;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class PromptBuilder {
 
@@ -34,8 +32,8 @@ public class PromptBuilder {
 
     public PromptBuilder(JsonNode config, String fileType) {
         this.config = config;
-        this.isStory = StringUtils.equalsAnyIgnoreCase(fileType, "story");
-        this.isFeature = StringUtils.equalsAnyIgnoreCase(fileType, "feature");
+        this.isStory = equalsAnyIgnoreCase(fileType, "story");
+        this.isFeature = equalsAnyIgnoreCase(fileType, "feature");
     }
 
     public String buildContext(boolean isDefaultValidation) {
@@ -134,16 +132,16 @@ public class PromptBuilder {
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.SCENARIO_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
-        Pair<String, Boolean> result = replacePlaceholder(scenarioTemplate, scenarioNode, STRUCTURE_FIELD, sectionHeader,
+        ReplacementResult result = replacePlaceholder(scenarioTemplate, scenarioNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber);
-        scenarioTemplate = result.getLeft();
-        if (result.getRight()) {
+        scenarioTemplate = result.template();
+        if (result.sectionAdded()) {
             sectionNumber++;
         }
 
         indentation = PromptUtils.getIndentation(scenarioTemplate, REQUIREMENTS_SECTION) + PromptUtils.generateSpaces(4);
         scenarioTemplate = replacePlaceholder(scenarioTemplate, scenarioNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).getLeft();
+                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
         scenarioTemplate = replaceExamples(scenarioTemplate, scenarioNode);
         return PromptUtils.removeEmptyLines(scenarioTemplate);
     }
@@ -155,10 +153,10 @@ public class PromptBuilder {
 
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.GIVEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
-        Pair<String, Boolean> result = replacePlaceholder(givenTemplate, givenNode, STRUCTURE_FIELD, sectionHeader,
+        ReplacementResult result = replacePlaceholder(givenTemplate, givenNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber);
-        givenTemplate = result.getLeft();
-        if (result.getRight()) {
+        givenTemplate = result.template();
+        if (result.sectionAdded()) {
             sectionNumber++;
         }
 
@@ -166,7 +164,7 @@ public class PromptBuilder {
 
         indentation = PromptUtils.getIndentation(givenTemplate, REQUIREMENTS_SECTION) + PromptUtils.generateSpaces(4);
         givenTemplate = replacePlaceholder(givenTemplate, givenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).getLeft();
+                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
 
         givenTemplate = replaceExamples(givenTemplate, givenNode);
 
@@ -185,10 +183,10 @@ public class PromptBuilder {
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.WHEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
                 + PromptUtils.generateSpaces(4);
-        Pair<String, Boolean> result = replacePlaceholder(whenTemplate, whenNode, STRUCTURE_FIELD, sectionHeader,
+        ReplacementResult result = replacePlaceholder(whenTemplate, whenNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber);
-        whenTemplate = result.getLeft();
-        if (result.getRight()) {
+        whenTemplate = result.template();
+        if (result.sectionAdded()) {
             sectionNumber++;
         }
 
@@ -197,7 +195,7 @@ public class PromptBuilder {
         indentation = PromptUtils.getIndentation(whenTemplate, REQUIREMENTS_SECTION)
                 + PromptUtils.generateSpaces(4);
         whenTemplate = replacePlaceholder(whenTemplate, whenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).getLeft();
+                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
 
         whenTemplate = replaceExamples(whenTemplate, whenNode);
 
@@ -216,10 +214,10 @@ public class PromptBuilder {
         String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
         String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
                 + PromptUtils.generateSpaces(4);
-        Pair<String, Boolean> result = replacePlaceholder(thenTemplate, thenNode, STRUCTURE_FIELD, sectionHeader,
+        ReplacementResult result = replacePlaceholder(thenTemplate, thenNode, STRUCTURE_FIELD, sectionHeader,
                 indentation, sectionNumber);
-        thenTemplate = result.getLeft();
-        if (result.getRight()) {
+        thenTemplate = result.template();
+        if (result.sectionAdded()) {
             sectionNumber++;
         }
 
@@ -228,7 +226,7 @@ public class PromptBuilder {
         indentation = PromptUtils.getIndentation(thenTemplate, REQUIREMENTS_SECTION)
                 + PromptUtils.generateSpaces(4);
         thenTemplate = replacePlaceholder(thenTemplate, thenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).getLeft();
+                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
 
         thenTemplate = replaceExamples(thenTemplate, thenNode);
 
@@ -248,7 +246,7 @@ public class PromptBuilder {
         return tagTemplate;
     }
 
-    private Pair<String, Boolean> replacePlaceholder(String template, JsonNode node, String sectionKey, String sectionHeader,
+    private ReplacementResult replacePlaceholder(String template, JsonNode node, String sectionKey, String sectionHeader,
                                                      String indentation, int sectionNumber) {
         if (node.hasNonNull(sectionKey) && node.get(sectionKey).isArray() && !node.get(sectionKey).isEmpty()) {
             StringBuilder sectionBuilder = new StringBuilder();
@@ -259,10 +257,10 @@ public class PromptBuilder {
                 sectionBuilder.append(indentation).append("* \"").append(element.asText()).append("\"\n");
             }
             String updatedTemplate = template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", sectionBuilder.toString().trim());
-            return Pair.of(updatedTemplate, true); // Section added
+            return new ReplacementResult(updatedTemplate, true); // Section added
         } else {
             String updatedTemplate = template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
-            return Pair.of(updatedTemplate, false); // No section added
+            return new ReplacementResult(updatedTemplate, false); // No section added
         }
     }
 
@@ -368,8 +366,35 @@ public class PromptBuilder {
     }
 
     private boolean hasGherkinTags(String text) {
-        return StringUtils.containsAnyIgnoreCase(text, "Meta")
-                || StringUtils.containsAnyIgnoreCase(text, "@");
+        return containsAnyIgnoreCase(text, "Meta", "@");
+    }
+
+    private static boolean equalsAnyIgnoreCase(String value, String... candidates) {
+        if (value == null) {
+            return false;
+        }
+        for (String candidate : candidates) {
+            if (candidate != null && value.equalsIgnoreCase(candidate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsAnyIgnoreCase(String value, String... candidates) {
+        if (value == null) {
+            return false;
+        }
+        String lower = value.toLowerCase();
+        for (String candidate : candidates) {
+            if (candidate != null && lower.contains(candidate.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private record ReplacementResult(String template, boolean sectionAdded) {
     }
 
 }

@@ -23,6 +23,7 @@ java {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    implementation(project(":core"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.+")
 
     // Adding other Jackson dependencies explicitly

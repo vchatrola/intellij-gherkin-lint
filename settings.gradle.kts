@@ -5,7 +5,7 @@ plugins {
     id("org.jetbrains.intellij.platform.settings") version "2.11.0"
 }
 
-rootProject.name = "intellij-gherkin-lint"
+rootProject.name = "gherkinlint-plugin"
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -16,3 +16,5 @@ dependencyResolutionManagement {
         }
     }
 }
+
+include("core")

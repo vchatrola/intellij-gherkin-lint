@@ -3,13 +3,14 @@ package com.vchatrola.config;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vchatrola.util.GherkinLintLogger;
+import java.util.logging.Logger;
 
 public class ConfigurationMerger {
+    private static final Logger LOGGER = Logger.getLogger(ConfigurationMerger.class.getName());
 
     public JsonNode mergeConfigurations(JsonNode defaultConfig, JsonNode customConfig) {
         if (customConfig == null) {
-            GherkinLintLogger.info("Custom configuration is null, returning default configuration.");
+            LOGGER.info("Custom configuration is null, returning default configuration.");
             return defaultConfig;
         }
 

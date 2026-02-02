@@ -1,11 +1,12 @@
 package com.vchatrola.prompt;
 
-import com.vchatrola.util.GherkinLintLogger;
+import java.util.logging.Logger;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PromptUtils {
+    private static final Logger LOGGER = Logger.getLogger(PromptUtils.class.getName());
 
     public static String removeEmptyLines(String input) {
         Pattern pattern = Pattern.compile("(?m)^\\s*$[\r\n]*");
@@ -15,7 +16,7 @@ public class PromptUtils {
 
     public static String generateSpaces(int numSpaces) {
         if (numSpaces < 0) {
-            GherkinLintLogger.error("Number of spaces cannot be negative");
+            LOGGER.severe("Number of spaces cannot be negative");
             return "";
         }
 

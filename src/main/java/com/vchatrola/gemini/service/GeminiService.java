@@ -60,6 +60,10 @@ public class GeminiService {
         return cachedModels;
     }
 
+    public static void clearCachedModels() {
+        cachedModels = null;
+    }
+
     public List<String> getAvailableModelNames() {
         return getAvailableModels().stream()
                 .map(GeminiRecords.Model::name)
