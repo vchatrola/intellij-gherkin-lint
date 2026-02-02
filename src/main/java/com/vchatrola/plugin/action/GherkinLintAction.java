@@ -160,6 +160,12 @@ public class GherkinLintAction extends AnAction {
                         notifyError(project,
                                 "Gemini models unavailable",
                                 "Could not load models from Gemini. Check API key and connectivity.");
+                    } else if (ex instanceof IllegalArgumentException
+                            && message != null
+                            && (message.contains("JSON") || message.contains("Gemini response"))) {
+                        notifyError(project,
+                                "Invalid Gemini response",
+                                message);
                     } else if (isRateLimitError(message)) {
                         notifyError(project,
                                 "Gemini rate limit exceeded",
