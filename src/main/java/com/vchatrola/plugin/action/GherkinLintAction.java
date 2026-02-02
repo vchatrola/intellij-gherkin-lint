@@ -91,7 +91,7 @@ public class GherkinLintAction extends AnAction {
 
         String selectedText = caret.getSelectedText();
         String firstLine = selectedText.trim().split("\\R")[0].trim();
-        String firstWord = PluginUtils.getFirstWordOnlyAlphabets(firstLine);
+        String firstWord = PluginUtils.getFirstKeywordToken(firstLine);
 
         if (!Constants.GHERKIN_KEYWORDS.contains(firstWord)) {
             GherkinLintLogger.info("Validation is not applicable: First word is not a Gherkin keyword: " + firstWord);
@@ -252,8 +252,8 @@ public class GherkinLintAction extends AnAction {
     }
 
     private boolean startsWithNoContextKeyword(String text, ConsoleView consoleView) {
-        if (StringUtils.equalsAnyIgnoreCase(Constants.AND_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))
-                || StringUtils.equalsAnyIgnoreCase(Constants.BUT_KEYWORD, PluginUtils.getFirstWordOnlyAlphabets(text))
+        if (StringUtils.equalsAnyIgnoreCase(Constants.AND_KEYWORD, PluginUtils.getFirstKeywordToken(text))
+                || StringUtils.equalsAnyIgnoreCase(Constants.BUT_KEYWORD, PluginUtils.getFirstKeywordToken(text))
                 || StringUtils.startsWith(text, Constants.ASTERISK_KEYWORD)) {
             reportError(consoleView, Constants.GHERKIN_NO_CONTEXT_ERROR, null);
             return true;

@@ -59,8 +59,20 @@ public class PluginUtils {
         return displayName + (contentCount >= 1 ? " (" + (contentCount + 1) + ")" : "");
     }
 
-    public static String getFirstWordOnlyAlphabets(String text) {
-        String[] words = text.split("\\s+");
+    public static String getFirstKeywordToken(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+
+        String trimmed = text.trim();
+        if (trimmed.startsWith("@")) {
+            return "@";
+        }
+        if (trimmed.startsWith("*")) {
+            return "*";
+        }
+
+        String[] words = trimmed.split("\\s+");
         if (words.length > 0) {
             return words[0].replaceAll("[^a-zA-Z]", "");
         }
