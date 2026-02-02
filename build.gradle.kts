@@ -7,8 +7,6 @@ fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
     id("java") // Java support
-    id("org.springframework.boot") version "3.3.0"
-    id("io.spring.dependency-management") version "1.1.4"
     id("org.jetbrains.intellij.platform") // IntelliJ Platform Gradle Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
@@ -25,7 +23,6 @@ java {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.+")
 
     // Adding other Jackson dependencies explicitly
@@ -97,10 +94,6 @@ intellijPlatform {
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
-    }
-
-    bootJar {
-        enabled = false
     }
 
     jar {

@@ -1,31 +1,18 @@
 package com.vchatrola.gemini.api;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.HttpExchange;
-import org.springframework.web.service.annotation.PostExchange;
+import com.vchatrola.gemini.dto.GeminiRecords;
 
-import static com.vchatrola.gemini.dto.GeminiRecords.*;
-
-@Component
-@HttpExchange("/v1beta/models/")
+/**
+ * @deprecated Legacy Spring HTTP interface retained for reference only.
+ *
+ * See docs/legacy/SPRING_GEMINI_INTERFACE.md for the original implementation.
+ */
+@Deprecated
 public interface GeminiInterface {
 
-    @GetExchange
-    ModelList getModels(@RequestHeader("x-goog-api-key") String apiKey);
+    GeminiRecords.ModelList getModels(String apiKey);
 
-    @PostExchange("{model}:countTokens")
-    GeminiCountResponse countTokens(
-            @PathVariable String model,
-            @RequestHeader("x-goog-api-key") String apiKey,
-            @RequestBody GeminiRequest request);
+    GeminiRecords.GeminiCountResponse countTokens(String model, String apiKey, GeminiRecords.GeminiRequest request);
 
-    @PostExchange("{model}:generateContent")
-    GeminiResponse getCompletion(
-            @PathVariable String model,
-            @RequestHeader("x-goog-api-key") String apiKey,
-            @RequestBody GeminiRequest request);
+    GeminiRecords.GeminiResponse getCompletion(String model, String apiKey, GeminiRecords.GeminiRequest request);
 }

@@ -1,5 +1,7 @@
 package com.vchatrola.gemini.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 public class GeminiRecords {
@@ -57,6 +59,7 @@ public class GeminiRecords {
     public record ModelList(List<Model> models) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record Model(
             String name,
             String version,

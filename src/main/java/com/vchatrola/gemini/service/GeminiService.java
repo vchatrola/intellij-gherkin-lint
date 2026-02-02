@@ -1,11 +1,11 @@
 package com.vchatrola.gemini.service;
 
-import com.vchatrola.gemini.api.GeminiInterface;
+import com.vchatrola.gemini.api.GeminiClient;
+import com.vchatrola.gemini.api.GeminiHttpClient;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.util.GherkinLintLogger;
 import com.vchatrola.plugin.setting.GherkinLintSecrets;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,19 +14,22 @@ import java.util.stream.Collectors;
 
 import static com.vchatrola.gemini.dto.GeminiRecords.*;
 
-@Service
 public class GeminiService {
 
-    private final GeminiInterface geminiInterface;
+    private final GeminiClient geminiClient;
     private static volatile List<GeminiRecords.Model> cachedModels;
 
-    @Autowired
-    public GeminiService(GeminiInterface geminiInterface) {
-        this.geminiInterface = geminiInterface;
+    public GeminiService() {
+        this(new GeminiHttpClient());
+    }
+
+    @VisibleForTesting
+    GeminiService(GeminiClient geminiClient) {
+        this.geminiClient = geminiClient;
     }
 
     public GeminiRecords.ModelList getModels() {
-        return geminiInterface.getModels(getApiKeyOrThrow());
+        return geminiClient.getModels(getApiKeyOrThrow());
     }
 
     public List<GeminiRecords.Model> getAvailableModels() {
@@ -67,7 +70,7 @@ public class GeminiService {
 
     public GeminiCountResponse countTokens(String model, GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(model);
-        return geminiInterface.countTokens(resolvedModel, getApiKeyOrThrow(), request);
+        return geminiClient.countTokens(resolvedModel, getApiKeyOrThrow(), request);
     }
 
     public int countTokens(String text, String model) {
@@ -78,14 +81,14 @@ public class GeminiService {
 
     public GeminiResponse getCompletion(GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(null);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, getApiKeyOrThrow(), request);
+        GeminiResponse response = geminiClient.generateContent(resolvedModel, getApiKeyOrThrow(), request);
         logUsageMetadata(response);
         return response;
     }
 
     public GeminiResponse getCompletionWithModel(String model, GeminiRequest request) {
         String resolvedModel = resolveModelOrThrow(model);
-        GeminiResponse response = geminiInterface.getCompletion(resolvedModel, getApiKeyOrThrow(), request);
+        GeminiResponse response = geminiClient.generateContent(resolvedModel, getApiKeyOrThrow(), request);
         logUsageMetadata(response);
         return response;
     }
