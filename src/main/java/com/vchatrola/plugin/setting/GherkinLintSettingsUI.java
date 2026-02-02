@@ -38,6 +38,7 @@ public class GherkinLintSettingsUI {
     private final JBLabel quotaStatusLabel;
     private final JBLabel modelFetchWarningLabel;
     private final JBLabel modelFetchedAtLabel;
+    private final JBLabel modelCacheNoteLabel;
     private final JComponent modelInfoPanel;
     private final JPasswordField apiKeyField;
     private final JBLabel apiKeyStatusLabel;
@@ -61,6 +62,7 @@ public class GherkinLintSettingsUI {
         quotaStatusLabel = createQuotaStatusLabel();
         modelFetchWarningLabel = createModelFetchWarningLabel();
         modelFetchedAtLabel = createModelFetchedAtLabel();
+        modelCacheNoteLabel = createModelCacheNoteLabel();
         modelInfoPanel = createModelInfoPanel();
         apiKeyField = createApiKeyField();
         apiKeyStatusLabel = createApiKeyStatusLabel();
@@ -96,6 +98,8 @@ public class GherkinLintSettingsUI {
                 .addLabeledComponent("Gemini model:", modelComboBox, 1, false)
                 .addVerticalGap(4)
                 .addComponent(createModelControlRow())
+                .addVerticalGap(4)
+                .addComponent(modelCacheNoteLabel)
                 .addVerticalGap(4)
                 .addComponent(modelInfoPanel)
                 .addVerticalGap(8)
@@ -226,6 +230,12 @@ public class GherkinLintSettingsUI {
         return label;
     }
 
+    private JBLabel createModelCacheNoteLabel() {
+        JBLabel label = new JBLabel("Models are cached after the first validation run.");
+        label.setForeground(JBColor.GRAY);
+        return label;
+    }
+
     private JComponent createModelInfoPanel() {
         JPanel panel = new JBPanel<>(new GridBagLayout());
         GridBagConstraints row = new GridBagConstraints();
@@ -246,6 +256,7 @@ public class GherkinLintSettingsUI {
         panel.add(quotaStatusLabel, row);
         return panel;
     }
+
 
     private JPasswordField createApiKeyField() {
         JPasswordField field = new JPasswordField();
@@ -300,6 +311,9 @@ public class GherkinLintSettingsUI {
         }
         setModelStatus("Model list loaded from cache.");
         updateFetchedAtLabel(state.getGeminiModelsFetchedAt());
+        if (state.getGeminiModel().isBlank() && !modelOrder.isEmpty()) {
+            comboBox.setSelectedItem(new ModelOption(modelOrder.get(0), modelOrder.get(0)));
+        }
         updateModelDetails();
     }
 
@@ -329,6 +343,9 @@ public class GherkinLintSettingsUI {
                 }
                 setModelStatus("Model list loaded from Gemini.");
                 persistModelCache(modelOrder);
+                if (!modelOrder.isEmpty() && isAutoSelected()) {
+                    comboBox.setSelectedItem(new ModelOption(modelOrder.get(0), modelOrder.get(0)));
+                }
                 updateFetchedAtLabel(System.currentTimeMillis());
                 updateModelDetails();
             });
@@ -466,6 +483,11 @@ public class GherkinLintSettingsUI {
     public String getGeminiModel() {
         ModelOption option = (ModelOption) modelComboBox.getSelectedItem();
         return option != null ? option.value() : "";
+    }
+
+    private boolean isAutoSelected() {
+        ModelOption option = (ModelOption) modelComboBox.getSelectedItem();
+        return option == null || option.value().isEmpty();
     }
 
     public void setGeminiModel(String model) {

@@ -166,6 +166,10 @@ public class GherkinLintAction extends AnAction {
                         notifyError(project,
                                 "Gemini API key missing",
                                 "Set the key in settings or GOOGLE_API_KEY, then try again.");
+                    } else if (isModelNotFoundError(message)) {
+                        notifyError(project,
+                                "Gemini model unavailable",
+                                "Default model is unavailable. Load models in settings and select another.");
                     } else if (ex instanceof IllegalArgumentException
                             && message != null
                             && (message.contains("JSON") || message.contains("Gemini response"))) {
@@ -245,6 +249,16 @@ public class GherkinLintAction extends AnAction {
         return message.contains("429")
                 || message.contains("RESOURCE_EXHAUSTED")
                 || message.toLowerCase().contains("rate limit");
+    }
+
+    private boolean isModelNotFoundError(@Nullable String message) {
+        if (message == null) {
+            return false;
+        }
+        String lower = message.toLowerCase();
+        return (lower.contains("404") && lower.contains("not found"))
+                || lower.contains("not found for api version")
+                || lower.contains("call listmodels");
     }
 
     private boolean isEmptyOrInvalidText(String text, ConsoleView consoleView) {

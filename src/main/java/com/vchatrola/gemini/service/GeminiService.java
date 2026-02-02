@@ -5,6 +5,7 @@ import com.vchatrola.gemini.api.GeminiHttpClient;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.util.GherkinLintLogger;
 import com.vchatrola.plugin.setting.GherkinLintSecrets;
+import com.vchatrola.plugin.setting.GherkinLintSettingsState;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Collections;
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 import static com.vchatrola.gemini.dto.GeminiRecords.*;
 
 public class GeminiService {
-
     private final GeminiClient geminiClient;
     private static volatile List<GeminiRecords.Model> cachedModels;
 
@@ -49,6 +49,7 @@ public class GeminiService {
                     cachedModels = modelList.models().stream()
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
+                    persistModelCache(cachedModels);
                 }
             } catch (Exception e) {
                 GherkinLintLogger.warn("Failed to load Gemini models. Model list will be empty.", e);
@@ -147,5 +148,20 @@ public class GeminiService {
         String resolved = available.get(0);
         GherkinLintLogger.info("Using Gemini model (auto): " + resolved);
         return resolved;
+    }
+
+    private void persistModelCache(List<GeminiRecords.Model> models) {
+        if (models == null || models.isEmpty()) {
+            return;
+        }
+        List<String> names = models.stream()
+                .map(GeminiRecords.Model::name)
+                .filter(Objects::nonNull)
+                .map(GeminiService::normalizeModelName)
+                .distinct()
+                .collect(Collectors.toList());
+        GherkinLintSettingsState state = GherkinLintSettingsState.getInstance();
+        state.geminiModels = names;
+        state.geminiModelsFetchedAt = System.currentTimeMillis();
     }
 }
