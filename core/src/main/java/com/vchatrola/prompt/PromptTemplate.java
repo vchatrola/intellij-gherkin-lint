@@ -2,7 +2,8 @@ package com.vchatrola.prompt;
 
 public class PromptTemplate {
 
-    public static final String CONTEXT_TEMPLATE = """
+  public static final String CONTEXT_TEMPLATE =
+      """
             **CONTEXT**
             * {CONTEXT}
 
@@ -10,12 +11,14 @@ public class PromptTemplate {
             {TASKS}
             """;
 
-    public static final String GENERAL_REQUIREMENTS_TEMPLATE = """
+  public static final String GENERAL_REQUIREMENTS_TEMPLATE =
+      """
             **GENERAL REQUIREMENTS**
             {REQUIREMENTS_SECTION}
             """;
 
-    public static final String SCENARIO_TEMPLATE = """
+  public static final String SCENARIO_TEMPLATE =
+      """
             **SCENARIO GUIDELINES**
             * **Applicable Line:** Any line starting with "Scenario:" or "Scenario Outline:".
             * **Requirements:**
@@ -27,7 +30,8 @@ public class PromptTemplate {
                 {INVALID_EXAMPLES_SECTION}
             """;
 
-    public static final String GIVEN_TEMPLATE = """
+  public static final String GIVEN_TEMPLATE =
+      """
             **GIVEN GUIDELINES**
             * **Applicable Line:** Any line starting with "Given" or following a "Given" line with "And," "But," or "*".
             * **Requirements:**
@@ -41,7 +45,8 @@ public class PromptTemplate {
             {FEEDBACK_SECTION}
             """;
 
-    public static final String WHEN_TEMPLATE = """
+  public static final String WHEN_TEMPLATE =
+      """
             **WHEN GUIDELINES**
             * **Applicable Line:** Any line starting with "When" or following a "When" line with "And," "But," or "*".
             * **Requirements:**
@@ -55,7 +60,8 @@ public class PromptTemplate {
             {FEEDBACK_SECTION}
             """;
 
-    public static final String THEN_TEMPLATE = """
+  public static final String THEN_TEMPLATE =
+      """
             **THEN GUIDELINES**
             * **Applicable Line:** Any line starting with "Then" or following a "Then" line with "And," "But," or "*".
             * **Requirements:**
@@ -69,18 +75,20 @@ public class PromptTemplate {
             {FEEDBACK_SECTION}
             """;
 
-    public static final String TAG_TEMPLATE = """
+  public static final String TAG_TEMPLATE =
+      """
             **TAG GUIDELINES**
             * **Applicable Line:** Any line starting with "Meta" or "@".
             {REQUIREMENTS_SECTION}
             """;
 
-    public static final String LLM_INPUT = """
+  public static final String LLM_INPUT = """
             **INPUT:**
             %s
             """;
 
-    public static final String OUTPUT_FORMAT_JSON = """
+  public static final String OUTPUT_FORMAT_JSON =
+      """
             **VALIDATION REPORT FORMAT**
             * The output must be a JSON array with objects for each valid Gherkin line (Scenario, step or tag) in the input, excluding empty lines and example tables, and must be compatible with standard Java JSON libraries.
             * Each object must have the following properties:
@@ -110,35 +118,43 @@ public class PromptTemplate {
                 ```
             """;
 
-    public static final String ENTITIES_TASK = """
+  public static final String ENTITIES_TASK =
+      """
             Ensure that the entities used in the Gherkin steps are from the following list: {ENTITIES_LIST}
             """;
 
-    public static final String GENERIC_PROMPT_CUCUMBER = """
+  public static final String GENERIC_PROMPT_CUCUMBER =
+      """
             Ensure adherence to the best Cucumber Gherkin practices when the provided guidelines are insufficient.
             """;
 
-    public static final String GENERIC_PROMPT_JBEHAVE = """
+  public static final String GENERIC_PROMPT_JBEHAVE =
+      """
             Ensure adherence to the best JBehave Gherkin practices when the provided guidelines are insufficient.
             """;
 
-    public static final String GENERIC_PROMPT_BOTH = """
+  public static final String GENERIC_PROMPT_BOTH =
+      """
             Ensure adherence to the best Gherkin practices when the provided guidelines are insufficient.
             """;
 
-    public static final String PERSPECTIVE_REQUIREMENT = "All the steps must be written in the %s point of view.";
+  public static final String PERSPECTIVE_REQUIREMENT =
+      "All the steps must be written in the %s point of view.";
 
-    public static final String BUT_REQUIREMENT = "For \"But\" statements, ensure proper placement after Given, When, "
-            + "Then or And. Also Verify it introduces an unexpected or negative outcome related to the preceding statement.";
+  public static final String BUT_REQUIREMENT =
+      "For \"But\" statements, ensure proper placement after Given, When, "
+          + "Then or And. Also Verify it introduces an unexpected or negative outcome related to the preceding statement.";
 
-    public static final String EXAMPLES_REQUIREMENT = "For scenarios with < > placeholders, ensure following " +
-            "'Examples:' sections with matching parameter values. Suggest adding 'Examples:' if missing.";
+  public static final String EXAMPLES_REQUIREMENT =
+      "For scenarios with < > placeholders, ensure following "
+          + "'Examples:' sections with matching parameter values. Suggest adding 'Examples:' if missing.";
 
-    public static String getStructureInstructions() {
-        String indentation = PromptUtils.getIndentation(SCENARIO_TEMPLATE, "{STRUCTURE_SECTION}");
-        return "**Structure (Mandatory):**" +
-                "\n" + indentation + PromptUtils.generateSpaces(5) +
-                "* The %s step must follow one of the following recommended formats:";
-    }
-
+  public static String getStructureInstructions() {
+    String indentation = PromptUtils.getIndentation(SCENARIO_TEMPLATE, "{STRUCTURE_SECTION}");
+    return "**Structure (Mandatory):**"
+        + "\n"
+        + indentation
+        + PromptUtils.generateSpaces(5)
+        + "* The %s step must follow one of the following recommended formats:";
+  }
 }

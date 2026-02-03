@@ -5,407 +5,522 @@ import com.vchatrola.util.Constants;
 
 public class PromptBuilder {
 
-    private static final String CONTEXT_PLACEHOLDER = "{CONTEXT}";
-    private static final String TASKS_PLACEHOLDER = "{TASKS}";
-    private static final String SECTION_SUFFIX = "_SECTION";
-    private static final String REQUIREMENTS_SECTION = "{REQUIREMENTS_SECTION}";
-    private static final String VALID_EXAMPLES_SECTION = "{VALID_EXAMPLES_SECTION}";
-    private static final String INVALID_EXAMPLES_SECTION = "{INVALID_EXAMPLES_SECTION}";
-    private static final String TENSE_SECTION = "{TENSE_SECTION}";
-    private static final String ENTITIES_PLACEHOLDER = "{ENTITIES_LIST}";
-    private static final String EXAMPLES_HEADER = "* **Examples:**";
-    private static final String REQUIREMENTS_HEADER = "**Requirements:**";
-    private static final String ADDITIONAL_REQUIREMENTS = "**Additional Requirements:**";
-    private static final String SUGGESTIONS_HEADER = "**Suggestions/Feedback:**";
-    private static final String TENSE_HEADER_FORMAT = "%d. **Tense:**\n%s* Ensure that %s statements are in the %s\n";
-    private static final String STRUCTURE_FIELD = "structure";
-    private static final String REQUIREMENTS_FIELD = "requirements";
-    private static final String EXAMPLES_FIELD = "examples";
-    private static final String VALID_FIELD = "valid";
-    private static final String INVALID_FIELD = "invalid";
-    private static final String FEEDBACK_FIELD = "feedback";
-    private static final String TENSE_FIELD = "tense";
+  private static final String CONTEXT_PLACEHOLDER = "{CONTEXT}";
+  private static final String TASKS_PLACEHOLDER = "{TASKS}";
+  private static final String SECTION_SUFFIX = "_SECTION";
+  private static final String REQUIREMENTS_SECTION = "{REQUIREMENTS_SECTION}";
+  private static final String VALID_EXAMPLES_SECTION = "{VALID_EXAMPLES_SECTION}";
+  private static final String INVALID_EXAMPLES_SECTION = "{INVALID_EXAMPLES_SECTION}";
+  private static final String TENSE_SECTION = "{TENSE_SECTION}";
+  private static final String ENTITIES_PLACEHOLDER = "{ENTITIES_LIST}";
+  private static final String EXAMPLES_HEADER = "* **Examples:**";
+  private static final String REQUIREMENTS_HEADER = "**Requirements:**";
+  private static final String ADDITIONAL_REQUIREMENTS = "**Additional Requirements:**";
+  private static final String SUGGESTIONS_HEADER = "**Suggestions/Feedback:**";
+  private static final String TENSE_HEADER_FORMAT =
+      "%d. **Tense:**\n%s* Ensure that %s statements are in the %s\n";
+  private static final String STRUCTURE_FIELD = "structure";
+  private static final String REQUIREMENTS_FIELD = "requirements";
+  private static final String EXAMPLES_FIELD = "examples";
+  private static final String VALID_FIELD = "valid";
+  private static final String INVALID_FIELD = "invalid";
+  private static final String FEEDBACK_FIELD = "feedback";
+  private static final String TENSE_FIELD = "tense";
 
-    private final JsonNode config;
-    private final boolean isStory;
-    private final boolean isFeature;
+  private final JsonNode config;
+  private final boolean isStory;
+  private final boolean isFeature;
 
-    public PromptBuilder(JsonNode config, String fileType) {
-        this.config = config;
-        this.isStory = equalsAnyIgnoreCase(fileType, "story");
-        this.isFeature = equalsAnyIgnoreCase(fileType, "feature");
+  public PromptBuilder(JsonNode config, String fileType) {
+    this.config = config;
+    this.isStory = equalsAnyIgnoreCase(fileType, "story");
+    this.isFeature = equalsAnyIgnoreCase(fileType, "feature");
+  }
+
+  public String buildContext(boolean isDefaultValidation) {
+    String context = PromptTemplate.CONTEXT_TEMPLATE;
+    context = context.replace(CONTEXT_PLACEHOLDER, config.get("CONTEXT").asText());
+
+    String tasks = buildTasks(isDefaultValidation);
+    context = context.replace(TASKS_PLACEHOLDER, tasks.trim());
+
+    return context;
+  }
+
+  private String buildTasks(boolean isDefaultValidation) {
+    StringBuilder tasksBuilder = new StringBuilder();
+    int taskNumber = 1;
+
+    for (JsonNode task : config.get("TASKS")) {
+      tasksBuilder.append(taskNumber++).append(". ").append(task.asText()).append("\n");
     }
 
-    public String buildContext(boolean isDefaultValidation) {
-        String context = PromptTemplate.CONTEXT_TEMPLATE;
-        context = context.replace(CONTEXT_PLACEHOLDER, config.get("CONTEXT").asText());
-
-        String tasks = buildTasks(isDefaultValidation);
-        context = context.replace(TASKS_PLACEHOLDER, tasks.trim());
-
-        return context;
+    JsonNode entitiesNode = config.get("ENTITIES");
+    if (hasEntities(entitiesNode)) {
+      String entitiesTask = buildEntitiesTask(entitiesNode);
+      tasksBuilder.append(taskNumber++).append(". ").append(entitiesTask).append("\n");
     }
 
-    private String buildTasks(boolean isDefaultValidation) {
-        StringBuilder tasksBuilder = new StringBuilder();
-        int taskNumber = 1;
-
-        for (JsonNode task : config.get("TASKS")) {
-            tasksBuilder.append(taskNumber++).append(". ").append(task.asText()).append("\n");
-        }
-
-        JsonNode entitiesNode = config.get("ENTITIES");
-        if (hasEntities(entitiesNode)) {
-            String entitiesTask = buildEntitiesTask(entitiesNode);
-            tasksBuilder.append(taskNumber++).append(". ").append(entitiesTask).append("\n");
-        }
-
-        if (isDefaultValidation) {
-            tasksBuilder.append(taskNumber++).append(". ").append(getGenericPrompt()).append("\n");
-        }
-
-        return tasksBuilder.toString();
+    if (isDefaultValidation) {
+      tasksBuilder.append(taskNumber++).append(". ").append(getGenericPrompt()).append("\n");
     }
 
-    private boolean hasEntities(JsonNode entitiesNode) {
-        return entitiesNode != null && entitiesNode.isArray() && !entitiesNode.isEmpty();
+    return tasksBuilder.toString();
+  }
+
+  private boolean hasEntities(JsonNode entitiesNode) {
+    return entitiesNode != null && entitiesNode.isArray() && !entitiesNode.isEmpty();
+  }
+
+  private String buildEntitiesTask(JsonNode entitiesNode) {
+    StringBuilder entitiesListBuilder = new StringBuilder();
+    for (JsonNode entity : entitiesNode) {
+      entitiesListBuilder.append(entity.asText()).append(", ");
+    }
+    String entitiesList = entitiesListBuilder.toString().replaceAll(", $", "");
+    return PromptTemplate.ENTITIES_TASK.replace(ENTITIES_PLACEHOLDER, entitiesList);
+  }
+
+  private String getGenericPrompt() {
+    if (isFeature) {
+      return PromptTemplate.GENERIC_PROMPT_CUCUMBER;
+    } else if (isStory) {
+      return PromptTemplate.GENERIC_PROMPT_JBEHAVE;
+    } else {
+      return PromptTemplate.GENERIC_PROMPT_BOTH;
+    }
+  }
+
+  private String buildGeneralRequirements(String selectedText) {
+    String requirementsTemplate = PromptTemplate.GENERAL_REQUIREMENTS_TEMPLATE;
+    StringBuilder requirementsBuilder = new StringBuilder();
+    int reqNumber = 1;
+
+    for (JsonNode requirement : config.get("REQUIREMENTS")) {
+      requirementsBuilder
+          .append(reqNumber++)
+          .append(". ")
+          .append(requirement.asText())
+          .append("\n");
     }
 
-    private String buildEntitiesTask(JsonNode entitiesNode) {
-        StringBuilder entitiesListBuilder = new StringBuilder();
-        for (JsonNode entity : entitiesNode) {
-            entitiesListBuilder.append(entity.asText()).append(", ");
-        }
-        String entitiesList = entitiesListBuilder.toString().replaceAll(", $", "");
-        return PromptTemplate.ENTITIES_TASK.replace(ENTITIES_PLACEHOLDER, entitiesList);
+    JsonNode perspectiveNode = config.get("PERSPECTIVE");
+    if (hasPerspective(perspectiveNode)) {
+      String perspectiveReq =
+          String.format(PromptTemplate.PERSPECTIVE_REQUIREMENT, perspectiveNode.asText());
+      requirementsBuilder.append(reqNumber++).append(". ").append(perspectiveReq).append("\n");
     }
 
-    private String getGenericPrompt() {
-        if (isFeature) {
-            return PromptTemplate.GENERIC_PROMPT_CUCUMBER;
-        } else if (isStory) {
-            return PromptTemplate.GENERIC_PROMPT_JBEHAVE;
-        } else {
-            return PromptTemplate.GENERIC_PROMPT_BOTH;
-        }
+    addConditionalRequirements(requirementsBuilder, selectedText, reqNumber);
+
+    return requirementsTemplate.replace(
+        REQUIREMENTS_SECTION, requirementsBuilder.toString().trim());
+  }
+
+  private boolean hasPerspective(JsonNode perspectiveNode) {
+    return perspectiveNode != null && !perspectiveNode.asText().isBlank();
+  }
+
+  private void addConditionalRequirements(
+      StringBuilder requirementsBuilder, String selectedText, int reqNumber) {
+    if (selectedText.contains(Constants.BUT_KEYWORD)) {
+      requirementsBuilder
+          .append(reqNumber++)
+          .append(". ")
+          .append(PromptTemplate.BUT_REQUIREMENT)
+          .append("\n");
     }
 
-    private String buildGeneralRequirements(String selectedText) {
-        String requirementsTemplate = PromptTemplate.GENERAL_REQUIREMENTS_TEMPLATE;
-        StringBuilder requirementsBuilder = new StringBuilder();
-        int reqNumber = 1;
+    if (PromptUtils.hasAngleBracketPlaceholders(selectedText)) {
+      requirementsBuilder
+          .append(reqNumber++)
+          .append(". ")
+          .append(PromptTemplate.EXAMPLES_REQUIREMENT)
+          .append("\n");
+    }
+  }
 
-        for (JsonNode requirement : config.get("REQUIREMENTS")) {
-            requirementsBuilder.append(reqNumber++).append(". ").append(requirement.asText()).append("\n");
-        }
+  public String buildScenarioContext() {
+    String scenarioTemplate = PromptTemplate.SCENARIO_TEMPLATE;
+    JsonNode scenarioNode = config.get("SCENARIO");
+    int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
 
-        JsonNode perspectiveNode = config.get("PERSPECTIVE");
-        if (hasPerspective(perspectiveNode)) {
-            String perspectiveReq = String.format(PromptTemplate.PERSPECTIVE_REQUIREMENT, perspectiveNode.asText());
-            requirementsBuilder.append(reqNumber++).append(". ").append(perspectiveReq).append("\n");
-        }
-
-        addConditionalRequirements(requirementsBuilder, selectedText, reqNumber);
-
-        return requirementsTemplate.replace(REQUIREMENTS_SECTION, requirementsBuilder.toString().trim());
+    String sectionHeader =
+        String.format(PromptTemplate.getStructureInstructions(), Constants.SCENARIO_KEYWORD);
+    String indentation =
+        PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
+    ReplacementResult result =
+        replacePlaceholder(
+            scenarioTemplate,
+            scenarioNode,
+            STRUCTURE_FIELD,
+            sectionHeader,
+            indentation,
+            sectionNumber);
+    scenarioTemplate = result.template();
+    if (result.sectionAdded()) {
+      sectionNumber++;
     }
 
-    private boolean hasPerspective(JsonNode perspectiveNode) {
-        return perspectiveNode != null && !perspectiveNode.asText().isBlank();
+    indentation =
+        PromptUtils.getIndentation(scenarioTemplate, REQUIREMENTS_SECTION)
+            + PromptUtils.generateSpaces(4);
+    scenarioTemplate =
+        replacePlaceholder(
+                scenarioTemplate,
+                scenarioNode,
+                REQUIREMENTS_FIELD,
+                ADDITIONAL_REQUIREMENTS,
+                indentation,
+                sectionNumber)
+            .template();
+    scenarioTemplate = replaceExamples(scenarioTemplate, scenarioNode);
+    return PromptUtils.removeEmptyLines(scenarioTemplate);
+  }
+
+  public String buildGivenContext() {
+    String givenTemplate = PromptTemplate.GIVEN_TEMPLATE;
+    JsonNode givenNode = config.get("GIVEN");
+    int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
+
+    String sectionHeader =
+        String.format(PromptTemplate.getStructureInstructions(), Constants.GIVEN_KEYWORD);
+    String indentation =
+        PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
+    ReplacementResult result =
+        replacePlaceholder(
+            givenTemplate, givenNode, STRUCTURE_FIELD, sectionHeader, indentation, sectionNumber);
+    givenTemplate = result.template();
+    if (result.sectionAdded()) {
+      sectionNumber++;
     }
 
-    private void addConditionalRequirements(StringBuilder requirementsBuilder, String selectedText, int reqNumber) {
-        if (selectedText.contains(Constants.BUT_KEYWORD)) {
-            requirementsBuilder.append(reqNumber++).append(". ").append(PromptTemplate.BUT_REQUIREMENT).append("\n");
-        }
+    givenTemplate =
+        replaceTenseSection(givenTemplate, givenNode, Constants.GIVEN_KEYWORD, sectionNumber++);
 
-        if (PromptUtils.hasAngleBracketPlaceholders(selectedText)) {
-            requirementsBuilder.append(reqNumber++).append(". ").append(PromptTemplate.EXAMPLES_REQUIREMENT).append("\n");
-        }
+    indentation =
+        PromptUtils.getIndentation(givenTemplate, REQUIREMENTS_SECTION)
+            + PromptUtils.generateSpaces(4);
+    givenTemplate =
+        replacePlaceholder(
+                givenTemplate,
+                givenNode,
+                REQUIREMENTS_FIELD,
+                ADDITIONAL_REQUIREMENTS,
+                indentation,
+                sectionNumber)
+            .template();
 
+    givenTemplate = replaceExamples(givenTemplate, givenNode);
+
+    String header = "* " + SUGGESTIONS_HEADER;
+    givenTemplate =
+        appendSectionListWithHeader(
+            givenTemplate, givenNode, FEEDBACK_FIELD, header, PromptUtils.generateSpaces(4));
+
+    return PromptUtils.removeEmptyLines(givenTemplate);
+  }
+
+  public String buildWhenContext() {
+    String whenTemplate = PromptTemplate.WHEN_TEMPLATE;
+    JsonNode whenNode = config.get("WHEN");
+    int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
+
+    String sectionHeader =
+        String.format(PromptTemplate.getStructureInstructions(), Constants.WHEN_KEYWORD);
+    String indentation =
+        PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
+    ReplacementResult result =
+        replacePlaceholder(
+            whenTemplate, whenNode, STRUCTURE_FIELD, sectionHeader, indentation, sectionNumber);
+    whenTemplate = result.template();
+    if (result.sectionAdded()) {
+      sectionNumber++;
     }
 
-    public String buildScenarioContext() {
-        String scenarioTemplate = PromptTemplate.SCENARIO_TEMPLATE;
-        JsonNode scenarioNode = config.get("SCENARIO");
-        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
+    whenTemplate =
+        replaceTenseSection(whenTemplate, whenNode, Constants.WHEN_KEYWORD, sectionNumber++);
 
-        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.SCENARIO_KEYWORD);
-        String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
-        ReplacementResult result = replacePlaceholder(scenarioTemplate, scenarioNode, STRUCTURE_FIELD, sectionHeader,
-                indentation, sectionNumber);
-        scenarioTemplate = result.template();
-        if (result.sectionAdded()) {
-            sectionNumber++;
-        }
+    indentation =
+        PromptUtils.getIndentation(whenTemplate, REQUIREMENTS_SECTION)
+            + PromptUtils.generateSpaces(4);
+    whenTemplate =
+        replacePlaceholder(
+                whenTemplate,
+                whenNode,
+                REQUIREMENTS_FIELD,
+                ADDITIONAL_REQUIREMENTS,
+                indentation,
+                sectionNumber)
+            .template();
 
-        indentation = PromptUtils.getIndentation(scenarioTemplate, REQUIREMENTS_SECTION) + PromptUtils.generateSpaces(4);
-        scenarioTemplate = replacePlaceholder(scenarioTemplate, scenarioNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
-        scenarioTemplate = replaceExamples(scenarioTemplate, scenarioNode);
-        return PromptUtils.removeEmptyLines(scenarioTemplate);
+    whenTemplate = replaceExamples(whenTemplate, whenNode);
+
+    String header = "* " + SUGGESTIONS_HEADER;
+    whenTemplate =
+        appendSectionListWithHeader(
+            whenTemplate, whenNode, FEEDBACK_FIELD, header, PromptUtils.generateSpaces(4));
+
+    return PromptUtils.removeEmptyLines(whenTemplate);
+  }
+
+  public String buildThenContext() {
+    String thenTemplate = PromptTemplate.THEN_TEMPLATE;
+    JsonNode thenNode = config.get("THEN");
+    int sectionNumber = 2; // // Starting from 2 because the first requirement is fixed
+
+    String sectionHeader =
+        String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
+    String indentation =
+        PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
+    ReplacementResult result =
+        replacePlaceholder(
+            thenTemplate, thenNode, STRUCTURE_FIELD, sectionHeader, indentation, sectionNumber);
+    thenTemplate = result.template();
+    if (result.sectionAdded()) {
+      sectionNumber++;
     }
 
-    public String buildGivenContext() {
-        String givenTemplate = PromptTemplate.GIVEN_TEMPLATE;
-        JsonNode givenNode = config.get("GIVEN");
-        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
+    thenTemplate =
+        replaceTenseSection(thenTemplate, thenNode, Constants.THEN_KEYWORD, sectionNumber++);
 
-        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.GIVEN_KEYWORD);
-        String indentation = PromptUtils.getLastLineIndentation(sectionHeader) + PromptUtils.generateSpaces(4);
-        ReplacementResult result = replacePlaceholder(givenTemplate, givenNode, STRUCTURE_FIELD, sectionHeader,
-                indentation, sectionNumber);
-        givenTemplate = result.template();
-        if (result.sectionAdded()) {
-            sectionNumber++;
-        }
+    indentation =
+        PromptUtils.getIndentation(thenTemplate, REQUIREMENTS_SECTION)
+            + PromptUtils.generateSpaces(4);
+    thenTemplate =
+        replacePlaceholder(
+                thenTemplate,
+                thenNode,
+                REQUIREMENTS_FIELD,
+                ADDITIONAL_REQUIREMENTS,
+                indentation,
+                sectionNumber)
+            .template();
 
-        givenTemplate = replaceTenseSection(givenTemplate, givenNode, Constants.GIVEN_KEYWORD, sectionNumber++);
+    thenTemplate = replaceExamples(thenTemplate, thenNode);
 
-        indentation = PromptUtils.getIndentation(givenTemplate, REQUIREMENTS_SECTION) + PromptUtils.generateSpaces(4);
-        givenTemplate = replacePlaceholder(givenTemplate, givenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
+    String header = "* " + SUGGESTIONS_HEADER;
+    thenTemplate =
+        appendSectionListWithHeader(
+            thenTemplate, thenNode, FEEDBACK_FIELD, header, PromptUtils.generateSpaces(4));
 
-        givenTemplate = replaceExamples(givenTemplate, givenNode);
+    return PromptUtils.removeEmptyLines(thenTemplate);
+  }
 
-        String header = "* " + SUGGESTIONS_HEADER;
-        givenTemplate = appendSectionListWithHeader(givenTemplate, givenNode, FEEDBACK_FIELD, header,
-                PromptUtils.generateSpaces(4));
+  private String buildTagContext() {
+    String tagTemplate = PromptTemplate.TAG_TEMPLATE;
+    JsonNode tagNode = config.get("TAG");
+    String header = "* " + REQUIREMENTS_HEADER;
+    tagTemplate =
+        appendSectionListWithHeader(
+            tagTemplate, tagNode, REQUIREMENTS_FIELD, header, PromptUtils.generateSpaces(4));
+    return tagTemplate;
+  }
 
-        return PromptUtils.removeEmptyLines(givenTemplate);
+  private ReplacementResult replacePlaceholder(
+      String template,
+      JsonNode node,
+      String sectionKey,
+      String sectionHeader,
+      String indentation,
+      int sectionNumber) {
+    if (node.hasNonNull(sectionKey)
+        && node.get(sectionKey).isArray()
+        && !node.get(sectionKey).isEmpty()) {
+      StringBuilder sectionBuilder = new StringBuilder();
+      if (!sectionHeader.isBlank()) {
+        sectionBuilder.append(sectionNumber).append(". ").append(sectionHeader).append("\n");
+      }
+      for (JsonNode element : node.get(sectionKey)) {
+        sectionBuilder.append(indentation).append("* \"").append(element.asText()).append("\"\n");
+      }
+      String updatedTemplate =
+          template.replace(
+              "{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}",
+              sectionBuilder.toString().trim());
+      return new ReplacementResult(updatedTemplate, true); // Section added
+    } else {
+      String updatedTemplate =
+          template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
+      return new ReplacementResult(updatedTemplate, false); // No section added
+    }
+  }
+
+  private String replaceExamples(String template, JsonNode parentNode) {
+    boolean hasExample = false;
+
+    if (!parentNode.hasNonNull(EXAMPLES_FIELD)) {
+      return template.replace(EXAMPLES_HEADER, "");
+    }
+    JsonNode examplesNode = parentNode.get(EXAMPLES_FIELD);
+
+    if (examplesNode.hasNonNull(VALID_FIELD)
+        && examplesNode.get(VALID_FIELD).isArray()
+        && !examplesNode.get(VALID_FIELD).isEmpty()) {
+      StringBuilder validExamplesBuilder = new StringBuilder("* **Good Examples:**\n");
+      String indentation =
+          PromptUtils.getIndentation(template, VALID_EXAMPLES_SECTION)
+              + PromptUtils.generateSpaces(4);
+      int number = 1;
+      for (JsonNode validExample : examplesNode.get(VALID_FIELD)) {
+        validExamplesBuilder
+            .append(indentation)
+            .append(number++)
+            .append(". ")
+            .append(validExample.asText())
+            .append("\n");
+      }
+      template = template.replace(VALID_EXAMPLES_SECTION, validExamplesBuilder.toString().trim());
+      hasExample = true;
+    } else {
+      template = template.replace(VALID_EXAMPLES_SECTION, "");
     }
 
-    public String buildWhenContext() {
-        String whenTemplate = PromptTemplate.WHEN_TEMPLATE;
-        JsonNode whenNode = config.get("WHEN");
-        int sectionNumber = 2; // Starting from 2 because the first requirement is fixed
-
-        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.WHEN_KEYWORD);
-        String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
-                + PromptUtils.generateSpaces(4);
-        ReplacementResult result = replacePlaceholder(whenTemplate, whenNode, STRUCTURE_FIELD, sectionHeader,
-                indentation, sectionNumber);
-        whenTemplate = result.template();
-        if (result.sectionAdded()) {
-            sectionNumber++;
-        }
-
-        whenTemplate = replaceTenseSection(whenTemplate, whenNode, Constants.WHEN_KEYWORD, sectionNumber++);
-
-        indentation = PromptUtils.getIndentation(whenTemplate, REQUIREMENTS_SECTION)
-                + PromptUtils.generateSpaces(4);
-        whenTemplate = replacePlaceholder(whenTemplate, whenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
-
-        whenTemplate = replaceExamples(whenTemplate, whenNode);
-
-        String header = "* " + SUGGESTIONS_HEADER;
-        whenTemplate = appendSectionListWithHeader(whenTemplate, whenNode, FEEDBACK_FIELD, header,
-                PromptUtils.generateSpaces(4));
-
-        return PromptUtils.removeEmptyLines(whenTemplate);
+    if (examplesNode.hasNonNull(INVALID_FIELD)
+        && examplesNode.get(INVALID_FIELD).isArray()
+        && !examplesNode.get(INVALID_FIELD).isEmpty()) {
+      StringBuilder invalidExamplesBuilder = new StringBuilder("* **Bad Examples:**\n");
+      String indentation =
+          PromptUtils.getIndentation(template, INVALID_EXAMPLES_SECTION)
+              + PromptUtils.generateSpaces(4);
+      int number = 1;
+      for (JsonNode invalidExample : examplesNode.get(INVALID_FIELD)) {
+        String example = getOptionalText(invalidExample, "example");
+        String reason = getOptionalText(invalidExample, "reason");
+        String suggestion = getOptionalText(invalidExample, "suggestion");
+        invalidExamplesBuilder
+            .append(indentation)
+            .append(number++)
+            .append(". ")
+            .append(example)
+            .append(" [Reason: ")
+            .append(reason)
+            .append(", Suggestion: ")
+            .append(suggestion)
+            .append("]\n");
+      }
+      template =
+          template.replace(INVALID_EXAMPLES_SECTION, invalidExamplesBuilder.toString().trim());
+      hasExample = true;
+    } else {
+      template = template.replace(INVALID_EXAMPLES_SECTION, "");
     }
 
-    public String buildThenContext() {
-        String thenTemplate = PromptTemplate.THEN_TEMPLATE;
-        JsonNode thenNode = config.get("THEN");
-        int sectionNumber = 2; // // Starting from 2 because the first requirement is fixed
-
-        String sectionHeader = String.format(PromptTemplate.getStructureInstructions(), Constants.THEN_KEYWORD);
-        String indentation = PromptUtils.getLastLineIndentation(sectionHeader)
-                + PromptUtils.generateSpaces(4);
-        ReplacementResult result = replacePlaceholder(thenTemplate, thenNode, STRUCTURE_FIELD, sectionHeader,
-                indentation, sectionNumber);
-        thenTemplate = result.template();
-        if (result.sectionAdded()) {
-            sectionNumber++;
-        }
-
-        thenTemplate = replaceTenseSection(thenTemplate, thenNode, Constants.THEN_KEYWORD, sectionNumber++);
-
-        indentation = PromptUtils.getIndentation(thenTemplate, REQUIREMENTS_SECTION)
-                + PromptUtils.generateSpaces(4);
-        thenTemplate = replacePlaceholder(thenTemplate, thenNode, REQUIREMENTS_FIELD,
-                ADDITIONAL_REQUIREMENTS, indentation, sectionNumber).template();
-
-        thenTemplate = replaceExamples(thenTemplate, thenNode);
-
-        String header = "* " + SUGGESTIONS_HEADER;
-        thenTemplate = appendSectionListWithHeader(thenTemplate, thenNode, FEEDBACK_FIELD, header,
-                PromptUtils.generateSpaces(4));
-
-        return PromptUtils.removeEmptyLines(thenTemplate);
+    if (!hasExample) {
+      template = template.replace(EXAMPLES_HEADER, "");
     }
 
-    private String buildTagContext() {
-        String tagTemplate = PromptTemplate.TAG_TEMPLATE;
-        JsonNode tagNode = config.get("TAG");
-        String header = "* " + REQUIREMENTS_HEADER;
-        tagTemplate = appendSectionListWithHeader(tagTemplate, tagNode, REQUIREMENTS_FIELD, header,
-                PromptUtils.generateSpaces(4));
-        return tagTemplate;
+    return template;
+  }
+
+  private static String getOptionalText(JsonNode node, String field) {
+    if (node == null || field == null) {
+      return "";
+    }
+    JsonNode value = node.get(field);
+    return value != null && !value.isNull() ? value.asText() : "";
+  }
+
+  private static String appendSectionListWithHeader(
+      String template,
+      JsonNode node,
+      String sectionKey,
+      String sectionHeader,
+      String listIndentation) {
+    if (node.hasNonNull(sectionKey)
+        && node.get(sectionKey).isArray()
+        && !node.get(sectionKey).isEmpty()) {
+      StringBuilder builder = new StringBuilder(sectionHeader + "\n");
+      int number = 1;
+
+      for (JsonNode feedback : node.get(sectionKey)) {
+        builder.append(String.format("%s%d. %s%n", listIndentation, number++, feedback.asText()));
+      }
+      return template.replace(
+          "{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", builder.toString().trim());
+    } else {
+      return template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
+    }
+  }
+
+  private String replaceTenseSection(
+      String template, JsonNode node, String stepKeyword, int sectionNumber) {
+    if (node.hasNonNull(TENSE_FIELD) && !node.get(TENSE_FIELD).asText().isBlank()) {
+      String tenseSection =
+          String.format(
+              TENSE_HEADER_FORMAT,
+              sectionNumber,
+              PromptUtils.generateSpaces(12),
+              stepKeyword,
+              node.get(TENSE_FIELD).asText());
+      return template.replace(TENSE_SECTION, tenseSection.trim());
+    } else {
+      return template.replace(TENSE_SECTION, "");
+    }
+  }
+
+  public String buildPrompt(String selectedText, boolean isDefaultValidation) {
+    StringBuilder inputText = new StringBuilder(buildContext(isDefaultValidation)).append("\n");
+
+    boolean appendScenario = selectedText.contains(Constants.SCENARIO_KEYWORD);
+    boolean appendGiven = selectedText.contains(Constants.GIVEN_KEYWORD);
+    boolean appendWhen = selectedText.contains(Constants.WHEN_KEYWORD);
+    boolean appendThen = selectedText.contains(Constants.THEN_KEYWORD);
+
+    if (appendScenario || appendGiven || appendWhen || appendThen) {
+      inputText.append(buildGeneralRequirements(selectedText)).append("\n");
+    }
+    if (appendScenario) {
+      inputText.append(buildScenarioContext()).append("\n");
+    }
+    if (appendGiven) {
+      inputText.append(buildGivenContext()).append("\n");
+    }
+    if (appendWhen) {
+      inputText.append(buildWhenContext()).append("\n");
+    }
+    if (appendThen) {
+      inputText.append(buildThenContext()).append("\n");
+    }
+    if (hasGherkinTags(selectedText)) {
+      inputText.append(buildTagContext()).append("\n");
     }
 
-    private ReplacementResult replacePlaceholder(String template, JsonNode node, String sectionKey, String sectionHeader,
-                                                 String indentation, int sectionNumber) {
-        if (node.hasNonNull(sectionKey) && node.get(sectionKey).isArray() && !node.get(sectionKey).isEmpty()) {
-            StringBuilder sectionBuilder = new StringBuilder();
-            if (!sectionHeader.isBlank()) {
-                sectionBuilder.append(sectionNumber).append(". ").append(sectionHeader).append("\n");
-            }
-            for (JsonNode element : node.get(sectionKey)) {
-                sectionBuilder.append(indentation).append("* \"").append(element.asText()).append("\"\n");
-            }
-            String updatedTemplate = template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", sectionBuilder.toString().trim());
-            return new ReplacementResult(updatedTemplate, true); // Section added
-        } else {
-            String updatedTemplate = template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
-            return new ReplacementResult(updatedTemplate, false); // No section added
-        }
+    inputText
+        .append(PromptTemplate.OUTPUT_FORMAT_JSON)
+        .append(String.format(PromptTemplate.LLM_INPUT, selectedText));
+
+    return inputText.toString();
+  }
+
+  private boolean hasGherkinTags(String text) {
+    return containsAnyIgnoreCase(text, "Meta", "@");
+  }
+
+  private static boolean equalsAnyIgnoreCase(String value, String... candidates) {
+    if (value == null) {
+      return false;
     }
-
-    private String replaceExamples(String template, JsonNode parentNode) {
-        boolean hasExample = false;
-
-        if (!parentNode.hasNonNull(EXAMPLES_FIELD)) {
-            return template.replace(EXAMPLES_HEADER, "");
-        }
-        JsonNode examplesNode = parentNode.get(EXAMPLES_FIELD);
-
-        if (examplesNode.hasNonNull(VALID_FIELD) && examplesNode.get(VALID_FIELD).isArray() && !examplesNode.get(VALID_FIELD).isEmpty()) {
-            StringBuilder validExamplesBuilder = new StringBuilder("* **Good Examples:**\n");
-            String indentation = PromptUtils.getIndentation(template, VALID_EXAMPLES_SECTION) + PromptUtils.generateSpaces(4);
-            int number = 1;
-            for (JsonNode validExample : examplesNode.get(VALID_FIELD)) {
-                validExamplesBuilder.append(indentation).append(number++).append(". ").append(validExample.asText()).append("\n");
-            }
-            template = template.replace(VALID_EXAMPLES_SECTION, validExamplesBuilder.toString().trim());
-            hasExample = true;
-        } else {
-            template = template.replace(VALID_EXAMPLES_SECTION, "");
-        }
-
-        if (examplesNode.hasNonNull(INVALID_FIELD) && examplesNode.get(INVALID_FIELD).isArray() && !examplesNode.get(INVALID_FIELD).isEmpty()) {
-            StringBuilder invalidExamplesBuilder = new StringBuilder("* **Bad Examples:**\n");
-            String indentation = PromptUtils.getIndentation(template, INVALID_EXAMPLES_SECTION) + PromptUtils.generateSpaces(4);
-            int number = 1;
-            for (JsonNode invalidExample : examplesNode.get(INVALID_FIELD)) {
-                String example = getOptionalText(invalidExample, "example");
-                String reason = getOptionalText(invalidExample, "reason");
-                String suggestion = getOptionalText(invalidExample, "suggestion");
-                invalidExamplesBuilder.append(indentation).append(number++).append(". ").append(example)
-                        .append(" [Reason: ").append(reason)
-                        .append(", Suggestion: ").append(suggestion).append("]\n");
-            }
-            template = template.replace(INVALID_EXAMPLES_SECTION, invalidExamplesBuilder.toString().trim());
-            hasExample = true;
-        } else {
-            template = template.replace(INVALID_EXAMPLES_SECTION, "");
-        }
-
-        if (!hasExample) {
-            template = template.replace(EXAMPLES_HEADER, "");
-        }
-
-        return template;
+    for (String candidate : candidates) {
+      if (candidate != null && value.equalsIgnoreCase(candidate)) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    private static String getOptionalText(JsonNode node, String field) {
-        if (node == null || field == null) {
-            return "";
-        }
-        JsonNode value = node.get(field);
-        return value != null && !value.isNull() ? value.asText() : "";
+  private static boolean containsAnyIgnoreCase(String value, String... candidates) {
+    if (value == null) {
+      return false;
     }
-
-    private static String appendSectionListWithHeader(String template, JsonNode node, String sectionKey,
-                                                      String sectionHeader, String listIndentation) {
-        if (node.hasNonNull(sectionKey) && node.get(sectionKey).isArray() && !node.get(sectionKey).isEmpty()) {
-            StringBuilder builder = new StringBuilder(sectionHeader + "\n");
-            int number = 1;
-
-            for (JsonNode feedback : node.get(sectionKey)) {
-                builder.append(String.format("%s%d. %s%n", listIndentation, number++, feedback.asText()));
-            }
-            return template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", builder.toString().trim());
-        } else {
-            return template.replace("{" + sectionKey.toUpperCase() + SECTION_SUFFIX + "}", "");
-        }
+    String lower = value.toLowerCase();
+    for (String candidate : candidates) {
+      if (candidate != null && lower.contains(candidate.toLowerCase())) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    private String replaceTenseSection(String template, JsonNode node, String stepKeyword, int sectionNumber) {
-        if (node.hasNonNull(TENSE_FIELD) && !node.get(TENSE_FIELD).asText().isBlank()) {
-            String tenseSection = String.format(TENSE_HEADER_FORMAT, sectionNumber, PromptUtils.generateSpaces(12),
-                    stepKeyword, node.get(TENSE_FIELD).asText());
-            return template.replace(TENSE_SECTION, tenseSection.trim());
-        } else {
-            return template.replace(TENSE_SECTION, "");
-        }
-    }
-
-    public String buildPrompt(String selectedText, boolean isDefaultValidation) {
-        StringBuilder inputText = new StringBuilder(buildContext(isDefaultValidation))
-                .append("\n");
-
-        boolean appendScenario = selectedText.contains(Constants.SCENARIO_KEYWORD);
-        boolean appendGiven = selectedText.contains(Constants.GIVEN_KEYWORD);
-        boolean appendWhen = selectedText.contains(Constants.WHEN_KEYWORD);
-        boolean appendThen = selectedText.contains(Constants.THEN_KEYWORD);
-
-        if (appendScenario || appendGiven || appendWhen || appendThen) {
-            inputText.append(buildGeneralRequirements(selectedText)).append("\n");
-        }
-        if (appendScenario) {
-            inputText.append(buildScenarioContext()).append("\n");
-        }
-        if (appendGiven) {
-            inputText.append(buildGivenContext()).append("\n");
-        }
-        if (appendWhen) {
-            inputText.append(buildWhenContext()).append("\n");
-        }
-        if (appendThen) {
-            inputText.append(buildThenContext()).append("\n");
-        }
-        if (hasGherkinTags(selectedText)) {
-            inputText.append(buildTagContext()).append("\n");
-        }
-
-        inputText.append(PromptTemplate.OUTPUT_FORMAT_JSON).append(String.format(PromptTemplate.LLM_INPUT, selectedText));
-
-        return inputText.toString();
-    }
-
-    private boolean hasGherkinTags(String text) {
-        return containsAnyIgnoreCase(text, "Meta", "@");
-    }
-
-    private static boolean equalsAnyIgnoreCase(String value, String... candidates) {
-        if (value == null) {
-            return false;
-        }
-        for (String candidate : candidates) {
-            if (candidate != null && value.equalsIgnoreCase(candidate)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean containsAnyIgnoreCase(String value, String... candidates) {
-        if (value == null) {
-            return false;
-        }
-        String lower = value.toLowerCase();
-        for (String candidate : candidates) {
-            if (candidate != null && lower.contains(candidate.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private record ReplacementResult(String template, boolean sectionAdded) {
-    }
-
+  private record ReplacementResult(String template, boolean sectionAdded) {}
 }

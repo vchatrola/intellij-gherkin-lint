@@ -10,6 +10,8 @@ plugins {
     id("org.jetbrains.intellij.platform") // IntelliJ Platform Gradle Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
+    id("com.diffplug.spotless") version "6.25.0"
+    id("checkstyle")
 }
 
 group = properties("pluginGroup").get()
@@ -106,4 +108,49 @@ tasks {
     test {
         useJUnitPlatform()
     }
+
+    register<DefaultTask>("format") {
+        group = "formatting"
+        description = "Apply code formatting (Spotless)."
+        dependsOn("spotlessApply", ":core:spotlessApply")
+    }
+}
+
+subprojects {
+    apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "checkstyle")
+
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            googleJavaFormat("1.19.2")
+            target("src/**/*.java")
+        }
+    }
+
+    configure<CheckstyleExtension> {
+        toolVersion = "10.12.5"
+        configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+        isShowViolations = true
+    }
+
+    tasks.named("check") {
+        dependsOn("spotlessCheck", "checkstyleMain", "checkstyleTest")
+    }
+}
+
+configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+    java {
+        googleJavaFormat("1.19.2")
+        target("src/**/*.java")
+    }
+}
+
+configure<CheckstyleExtension> {
+    toolVersion = "10.12.5"
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    isShowViolations = true
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck", "checkstyleMain", "checkstyleTest")
 }

@@ -7,18 +7,17 @@ import com.vchatrola.gemini.service.GeminiService;
 @Service
 public final class GherkinLintServiceImpl implements GherkinLintService, Disposable {
 
-    private final GeminiService geminiService;
+  private final GeminiService geminiService;
 
-    public GherkinLintServiceImpl() {
-        this.geminiService = new GeminiService();
-    }
+  public GherkinLintServiceImpl() {
+    this.geminiService = new GeminiService();
+  }
 
-    @Override
-    public GeminiService getGeminiService() {
-        return geminiService;
-    }
+  @Override
+  public GeminiService getGeminiService() {
+    return geminiService;
+  }
 
-    @Override
-    public void dispose() {
-    }
+  @Override
+  public void dispose() {}
 }

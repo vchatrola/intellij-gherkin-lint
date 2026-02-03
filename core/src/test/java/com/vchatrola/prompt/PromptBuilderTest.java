@@ -1,47 +1,49 @@
 package com.vchatrola.prompt;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class PromptBuilderTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
-    @Test
-    void buildContext_includesGenericPromptForDefaultValidation() throws Exception {
-        PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
-        String context = builder.buildContext(true);
+  @Test
+  void buildContext_includesGenericPromptForDefaultValidation() throws Exception {
+    PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
+    String context = builder.buildContext(true);
 
-        assertTrue(context.contains("Test context"));
-        assertTrue(context.contains(PromptTemplate.GENERIC_PROMPT_CUCUMBER.trim()));
-    }
+    assertTrue(context.contains("Test context"));
+    assertTrue(context.contains(PromptTemplate.GENERIC_PROMPT_CUCUMBER.trim()));
+  }
 
-    @Test
-    void buildContext_excludesGenericPromptWhenNotDefault() throws Exception {
-        PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
-        String context = builder.buildContext(false);
+  @Test
+  void buildContext_excludesGenericPromptWhenNotDefault() throws Exception {
+    PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
+    String context = builder.buildContext(false);
 
-        assertTrue(context.contains("Test context"));
-        assertFalse(context.contains(PromptTemplate.GENERIC_PROMPT_CUCUMBER.trim()));
-    }
+    assertTrue(context.contains("Test context"));
+    assertFalse(context.contains(PromptTemplate.GENERIC_PROMPT_CUCUMBER.trim()));
+  }
 
-    @Test
-    void buildPrompt_includesTagContextWhenTagPresent() throws Exception {
-        PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
-        String prompt = builder.buildPrompt("@tag\nScenario: Test", true);
+  @Test
+  void buildPrompt_includesTagContextWhenTagPresent() throws Exception {
+    PromptBuilder builder = new PromptBuilder(buildConfig(), "feature");
+    String prompt = builder.buildPrompt("@tag\nScenario: Test", true);
 
-        assertTrue(prompt.contains("TAG GUIDELINES"));
-        assertTrue(prompt.contains("Tag requirement"));
-        assertTrue(prompt.contains("@tag"));
-    }
+    assertTrue(prompt.contains("TAG GUIDELINES"));
+    assertTrue(prompt.contains("Tag requirement"));
+    assertTrue(prompt.contains("@tag"));
+  }
 
-    @Test
-    void buildPrompt_handlesMissingSectionsGracefully() throws Exception {
-        JsonNode minimal = mapper.readTree("""
+  @Test
+  void buildPrompt_handlesMissingSectionsGracefully() throws Exception {
+    JsonNode minimal =
+        mapper.readTree(
+            """
                 {
                   "CONTEXT": "Test context",
                   "TASKS": ["Task one"],
@@ -55,18 +57,20 @@ class PromptBuilderTest {
                   "TAG": {}
                 }
                 """);
-        PromptBuilder builder = new PromptBuilder(minimal, "feature");
-        String prompt = builder.buildPrompt("Scenario: Test", true);
+    PromptBuilder builder = new PromptBuilder(minimal, "feature");
+    String prompt = builder.buildPrompt("Scenario: Test", true);
 
-        assertTrue(prompt.contains("Test context"));
-        assertTrue(prompt.contains("VALIDATION REPORT FORMAT"));
-        assertFalse(prompt.contains("{STRUCTURE_SECTION}"));
-        assertFalse(prompt.contains("{REQUIREMENTS_SECTION}"));
-    }
+    assertTrue(prompt.contains("Test context"));
+    assertTrue(prompt.contains("VALIDATION REPORT FORMAT"));
+    assertFalse(prompt.contains("{STRUCTURE_SECTION}"));
+    assertFalse(prompt.contains("{REQUIREMENTS_SECTION}"));
+  }
 
-    @Test
-    void buildPrompt_handlesInvalidExampleSchema() throws Exception {
-        JsonNode config = mapper.readTree("""
+  @Test
+  void buildPrompt_handlesInvalidExampleSchema() throws Exception {
+    JsonNode config =
+        mapper.readTree(
+            """
                         {
                           "CONTEXT": "Test context",
                           "TASKS": ["Task one"],
@@ -84,16 +88,17 @@ class PromptBuilderTest {
                           "TAG": {}
                         }
                 """);
-        PromptBuilder builder = new PromptBuilder(config, "feature");
-        String prompt = builder.buildPrompt("Scenario: Test", true);
+    PromptBuilder builder = new PromptBuilder(config, "feature");
+    String prompt = builder.buildPrompt("Scenario: Test", true);
 
-        assertTrue(prompt.contains("Bad example"));
-        assertTrue(prompt.contains("Reason: "));
-        assertTrue(prompt.contains("Suggestion: "));
-    }
+    assertTrue(prompt.contains("Bad example"));
+    assertTrue(prompt.contains("Reason: "));
+    assertTrue(prompt.contains("Suggestion: "));
+  }
 
-    private JsonNode buildConfig() throws Exception {
-        return mapper.readTree("""
+  private JsonNode buildConfig() throws Exception {
+    return mapper.readTree(
+        """
                 {
                   "CONTEXT": "Test context",
                   "TASKS": ["Task one"],
@@ -132,5 +137,5 @@ class PromptBuilderTest {
                   }
                 }
                 """);
-    }
+  }
 }
