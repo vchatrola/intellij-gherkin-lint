@@ -83,7 +83,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            ide("ideaIU", properties("platformVersion").get())
+            ide("IU", properties("platformVersion").get())
         }
     }
 
