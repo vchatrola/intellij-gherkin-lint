@@ -18,6 +18,7 @@ import java.util.Objects;
  */
 
 public class PluginUtils {
+    private static int contentSequence = 0;
 
     public static String getSelectedText(Editor editor) {
         return editor.getCaretModel().getCurrentCaret().getSelectedText();
@@ -42,6 +43,9 @@ public class PluginUtils {
 
     public static Content createToolWindowContent(ToolWindow toolWindow, ConsoleView consoleView, String displayName) {
         try {
+            if (getExistingResultCount(toolWindow, displayName) == 0) {
+                contentSequence = 0;
+            }
             String contentName = generateContentName(toolWindow, displayName);
             Content content = ContentFactory.getInstance().createContent(consoleView.getComponent(), contentName, false);
             content.setCloseable(true);
@@ -55,8 +59,19 @@ public class PluginUtils {
     }
 
     private static String generateContentName(ToolWindow toolWindow, String displayName) {
-        int contentCount = toolWindow.getContentManager().getContentCount();
-        return displayName + (contentCount >= 1 ? " (" + (contentCount + 1) + ")" : "");
+        int next = ++contentSequence;
+        return displayName + (next > 1 ? " (" + next + ")" : "");
+    }
+
+    private static int getExistingResultCount(ToolWindow toolWindow, String displayName) {
+        int count = 0;
+        for (Content content : toolWindow.getContentManager().getContents()) {
+            String name = content.getDisplayName();
+            if (name != null && name.startsWith(displayName)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public static String getFirstKeywordToken(String text) {

@@ -3,8 +3,10 @@ package com.vchatrola.plugin.toolWindow;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.vchatrola.util.GherkinLintLogger;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
 import com.vchatrola.util.Constants;
+import com.vchatrola.util.GherkinLintLogger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -16,17 +18,32 @@ public class GherkinLintWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         try {
-            // Ensure this code runs on the Event Dispatch Thread
-            JPanel contentPanel = new JPanel(new BorderLayout());
-            JLabel label = new JLabel(Constants.DEFAULT_TOOL_WINDOW_TEXT);
-            label.setForeground(UIManager.getColor("textInactiveText")); // Set text color to lighter shade
-            contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-            contentPanel.add(label, BorderLayout.CENTER);
-            toolWindow.getComponent().add(contentPanel);
+            if (toolWindow.getContentManager().getContentCount() > 0) {
+                return;
+            }
+            JPanel contentPanel = new JPanel(new GridBagLayout());
+            JLabel label = new JLabel(buildWelcomeHtml());
+            label.setForeground(UIManager.getColor("textInactiveText"));
+            contentPanel.add(label, new GridBagConstraints());
+
+            Content content = ContentFactory.getInstance()
+                    .createContent(contentPanel, "Welcome", false);
+            content.setCloseable(false);
+            toolWindow.getContentManager().addContent(content);
             GherkinLintLogger.info("Tool window content created successfully.");
         } catch (Exception e) {
             GherkinLintLogger.error("Failed to create tool window content.", e);
         }
+    }
+
+    private static String buildWelcomeHtml() {
+        String extensions = String.join(", ", Constants.SUPPORTED_EXTENSIONS);
+        return "<html>" +
+                "<b>GherkinLint</b><br/>" +
+                "Select Gherkin text in a " + extensions + " file.<br/>" +
+                "Right-click and choose <i>Validate Gherkin</i>.<br/>" +
+                "Results appear in this tool window." +
+                "</html>";
     }
 
 }
