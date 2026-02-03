@@ -81,6 +81,12 @@ intellijPlatform {
         }
     }
 
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
+
     signing {
         certificateChain.set(environment("CERTIFICATE_CHAIN"))
         privateKey.set(environment("PRIVATE_KEY"))
