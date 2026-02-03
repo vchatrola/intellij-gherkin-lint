@@ -2,7 +2,9 @@
 <idea-plugin>
     <id>com.vchatrola.gherkinlint</id>
     <name>GherkinLint</name>
-    <vendor email="vchatrola@outlook.com" url="https://yourcompany.com">Vivek Chatrola</vendor>
+    <vendor email="vivekchatrola007@gmail.com" url="https://wiseadvert.com/">Vivek Chatrola</vendor>
+    <url>https://wiseadvert.com/</url>
+    <idea-version since-build="223" until-build="253.*"/>
 
     <description><![CDATA[
     <b>GherkinLint: Validate Your BDD Feature Files (IntelliJ Plugin)</b><br/>

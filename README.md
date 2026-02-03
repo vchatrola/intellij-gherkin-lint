@@ -50,5 +50,6 @@ See `CONTRIBUTING.md` for workflow and expectations.
 Licensed under the MIT License. See `LICENSE`.
 
 ## Support
-Open an issue in this repository for bugs or feature requests.
+Open an issue in this repository for bugs or feature requests:
+https://github.com/vchatrola/intellij-gherkin-lint/issues
 <!-- Plugin description end -->
