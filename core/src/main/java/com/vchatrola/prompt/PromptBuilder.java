@@ -247,7 +247,7 @@ public class PromptBuilder {
     }
 
     private ReplacementResult replacePlaceholder(String template, JsonNode node, String sectionKey, String sectionHeader,
-                                                     String indentation, int sectionNumber) {
+                                                 String indentation, int sectionNumber) {
         if (node.hasNonNull(sectionKey) && node.get(sectionKey).isArray() && !node.get(sectionKey).isEmpty()) {
             StringBuilder sectionBuilder = new StringBuilder();
             if (!sectionHeader.isBlank()) {
@@ -290,9 +290,12 @@ public class PromptBuilder {
             String indentation = PromptUtils.getIndentation(template, INVALID_EXAMPLES_SECTION) + PromptUtils.generateSpaces(4);
             int number = 1;
             for (JsonNode invalidExample : examplesNode.get(INVALID_FIELD)) {
-                invalidExamplesBuilder.append(indentation).append(number++).append(". ").append(invalidExample.get("example").asText())
-                        .append(" [Reason: ").append(invalidExample.get("reason").asText())
-                        .append(", Suggestion: ").append(invalidExample.get("suggestion").asText()).append("]\n");
+                String example = getOptionalText(invalidExample, "example");
+                String reason = getOptionalText(invalidExample, "reason");
+                String suggestion = getOptionalText(invalidExample, "suggestion");
+                invalidExamplesBuilder.append(indentation).append(number++).append(". ").append(example)
+                        .append(" [Reason: ").append(reason)
+                        .append(", Suggestion: ").append(suggestion).append("]\n");
             }
             template = template.replace(INVALID_EXAMPLES_SECTION, invalidExamplesBuilder.toString().trim());
             hasExample = true;
@@ -305,6 +308,14 @@ public class PromptBuilder {
         }
 
         return template;
+    }
+
+    private static String getOptionalText(JsonNode node, String field) {
+        if (node == null || field == null) {
+            return "";
+        }
+        JsonNode value = node.get(field);
+        return value != null && !value.isNull() ? value.asText() : "";
     }
 
     private static String appendSectionListWithHeader(String template, JsonNode node, String sectionKey,
