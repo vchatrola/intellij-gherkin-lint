@@ -33,6 +33,8 @@ public class Constants {
     public static final String GHERKIN_NO_CONTEXT_ERROR = "The selected Gherkin text includes an 'And', 'But', or '*' step without context. " +
             "These steps depend on preceding 'Given', 'When', or 'Then' steps to define the scenario flow. " +
             "Please include the preceding steps for proper validation.";
+    public static final long VALIDATION_THROTTLE_MS = 5000L;
+    public static final String VALIDATION_THROTTLED_ERROR = "Please wait a moment before validating again.";
     public static final String NO_GEMINI_SERVICE_RESPONSE_ERROR = "No response received from the Gemini service.";
     public static final String UNKNOWN_ERROR = "An error occurred during Gherkin text validation task execution.";
     public static final String CONSOLE_OUTPUT_PRINT_FAILURE = "Failed to print console output.";

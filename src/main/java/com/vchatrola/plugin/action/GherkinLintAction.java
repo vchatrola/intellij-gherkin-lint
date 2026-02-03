@@ -38,6 +38,7 @@ import java.io.IOException;
 public class GherkinLintAction extends AnAction {
 
     public static String fileType;
+    private static volatile long lastValidationAt = 0L;
 
     @Override
     public void actionPerformed(AnActionEvent event) {
@@ -105,6 +106,11 @@ public class GherkinLintAction extends AnAction {
         if (isEmptyOrInvalidText(selectedText, consoleView)
                 || isTooShort(selectedText, consoleView)
                 || startsWithNoContextKeyword(selectedText, consoleView)) {
+            return;
+        }
+        if (isThrottled()) {
+            reportError(consoleView, Constants.VALIDATION_THROTTLED_ERROR, null);
+            notifyWarning(project, "Validation throttled", Constants.VALIDATION_THROTTLED_ERROR);
             return;
         }
 
@@ -242,6 +248,13 @@ public class GherkinLintAction extends AnAction {
                 .notify(project);
     }
 
+    private void notifyWarning(@Nullable Project project, String title, String message) {
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("GherkinLint")
+                .createNotification(title, message, NotificationType.WARNING)
+                .notify(project);
+    }
+
     private boolean isRateLimitError(@Nullable String message) {
         if (message == null) {
             return false;
@@ -292,4 +305,12 @@ public class GherkinLintAction extends AnAction {
         return gherkinLintServiceImpl.getGeminiService();
     }
 
+    private static boolean isThrottled() {
+        long now = System.currentTimeMillis();
+        if (now - lastValidationAt < Constants.VALIDATION_THROTTLE_MS) {
+            return true;
+        }
+        lastValidationAt = now;
+        return false;
+    }
 }
