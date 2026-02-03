@@ -45,6 +45,7 @@ public class GherkinLintSettingsUI {
     private final JPasswordField apiKeyField;
     private final JBLabel apiKeyStatusLabel;
     private final JButton clearApiKeyButton;
+    private final JBLabel privacyNoticeLabel;
     private final JBLabel instructionsLabel;
     private final Map<String, GeminiRecords.Model> modelDetailsByName = new HashMap<>();
     private final List<String> modelOrder = new ArrayList<>();
@@ -68,6 +69,7 @@ public class GherkinLintSettingsUI {
         apiKeyField = createApiKeyField();
         apiKeyStatusLabel = createApiKeyStatusLabel();
         clearApiKeyButton = createClearApiKeyButton();
+        privacyNoticeLabel = createPrivacyNoticeLabel();
         instructionsLabel = createInstructionsLabel();
         loadCachedModels(modelComboBox);
 
@@ -80,6 +82,8 @@ public class GherkinLintSettingsUI {
                 .addComponent(createApiKeyControlRow())
                 .addVerticalGap(4)
                 .addComponent(apiKeyStatusLabel)
+                .addVerticalGap(4)
+                .addComponent(privacyNoticeLabel)
                 .addVerticalGap(8)
                 .addComponent(new TitledSeparator("Custom Rules"))
                 .addVerticalGap(4)
@@ -173,7 +177,8 @@ public class GherkinLintSettingsUI {
     private JBLabel createInstructionsLabel() {
         JBLabel label = new JBLabel("<html><body style='width: 400px'>" +
                 "Custom rules let you enforce your team’s Gherkin style. " +
-                "Enable custom validation, copy the sample file, edit it, and select it above." +
+                "Enable custom validation, copy the sample file, edit it, and select it above. " +
+                "Custom rules are included in Gemini requests—avoid sensitive content." +
                 "</body></html>");
         label.setForeground(JBColor.GRAY);
         return label;
@@ -261,6 +266,15 @@ public class GherkinLintSettingsUI {
 
     private JBLabel createApiKeyStatusLabel() {
         JBLabel label = new JBLabel(getApiKeyStatusText());
+        label.setForeground(JBColor.GRAY);
+        return label;
+    }
+
+    private JBLabel createPrivacyNoticeLabel() {
+        JBLabel label = new JBLabel("<html><body style='width: 420px'>" +
+                "Selected Gherkin text is sent to Gemini for validation. " +
+                "Avoid sharing sensitive or confidential data." +
+                "</body></html>");
         label.setForeground(JBColor.GRAY);
         return label;
     }

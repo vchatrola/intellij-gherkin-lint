@@ -41,8 +41,9 @@ public class GherkinLintWindowFactory implements ToolWindowFactory {
         return "<html>" +
                 "<b>GherkinLint</b><br/>" +
                 "Select Gherkin text in a " + extensions + " file.<br/>" +
-                "Right-click and choose <i>Validate Gherkin</i>.<br/>" +
-                "Results appear in this tool window." +
+                "Right-click &rarr; <i>Validate Gherkin</i>.<br/>" +
+                "Results appear here.<br/><br/>" +
+                "<span style='color:gray'>Privacy: selected text is sent to Gemini.</span>" +
                 "</html>";
     }
 
