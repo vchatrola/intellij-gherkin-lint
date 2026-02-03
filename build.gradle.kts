@@ -28,6 +28,8 @@ dependencies {
 
     // Adding other Jackson dependencies explicitly
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.17.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
         intellijIdea(properties("platformVersion").get())
@@ -99,5 +101,9 @@ tasks {
 
     jar {
         enabled = true
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
