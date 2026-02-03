@@ -2,12 +2,14 @@ package com.vchatrola.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.logging.Logger;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 public class ConfigurationLoader {
     private static final Logger LOGGER = Logger.getLogger(ConfigurationLoader.class.getName());
@@ -31,8 +33,12 @@ public class ConfigurationLoader {
             return null;
         }
         ObjectMapper mapper = new ObjectMapper();
+        Path path = Paths.get(customConfigPath);
         try {
-            return mapper.readTree(new File(customConfigPath));
+            if (!Files.exists(path)) {
+                throw new FileNotFoundException("Custom configuration file not found: " + customConfigPath);
+            }
+            return mapper.readTree(path.toFile());
         } catch (FileNotFoundException e) {
             LOGGER.severe("Custom configuration file not found: " + customConfigPath);
             return null;

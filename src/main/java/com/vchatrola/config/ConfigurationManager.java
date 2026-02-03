@@ -3,8 +3,11 @@ package com.vchatrola.config;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vchatrola.plugin.setting.GherkinLintSettingsManager;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -56,8 +59,16 @@ public class ConfigurationManager {
         if (!isCustomLogicEnabled || customFilePath == null || customFilePath.isBlank()) {
             return -1L;
         }
-        File file = new File(customFilePath);
-        return file.exists() ? file.lastModified() : -1L;
+        Path path = Paths.get(customFilePath);
+        try {
+            if (Files.exists(path)) {
+                FileTime lastModified = Files.getLastModifiedTime(path);
+                return lastModified.toMillis();
+            }
+        } catch (IOException e) {
+            LOGGER.warning("Failed to read last modified time for: " + customFilePath);
+        }
+        return -1L;
     }
 
     private static CachedConfig getCachedConfig() {
