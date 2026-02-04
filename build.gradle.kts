@@ -54,9 +54,7 @@ val pluginDescription = providers.fileContents(layout.projectDirectory.file("REA
         if (!containsAll(listOf(start, end))) {
             throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
         }
-        val html = subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
-        // Marketplace validator requires the description to start with Latin characters.
-        "GherkinLint validates BDD Gherkin steps in the editor and enforces team style.\n$html"
+        subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
     }
 }
 

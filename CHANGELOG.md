@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-02-03
+### Fixed
+- Marketplace preview description formatting (README-only description, ASCII punctuation).
+
 ## [0.1.0] - 2026-02-03
 ### Added
 - Initial Marketplace release of GherkinLint.
