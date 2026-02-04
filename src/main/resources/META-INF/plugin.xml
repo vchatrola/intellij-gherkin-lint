@@ -23,7 +23,7 @@
                     anchor="bottom"
                     secondary="false"
                     canCloseContents="true"
-                    icon="AllIcons.Actions.Replace"/>
+                    icon="AllIcons.Actions.Preview"/>
     </extensions>
 
     <!-- Register services -->
@@ -48,7 +48,7 @@
         <action id="Validate.Gherkin.Action"
                 class="com.vchatrola.plugin.action.GherkinLintAction"
                 text="Validate Gherkin"
-                icon="AllIcons.Actions.Replace"
+                icon="AllIcons.Actions.Preview"
                 description="Analyzes the selected Gherkin text for syntax errors and best practices.">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
