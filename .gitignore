@@ -4,3 +4,6 @@
 build
 releases
 .intellijPlatform
+.run
+docs/legacy
+PROJECT_OVERVIEW.md

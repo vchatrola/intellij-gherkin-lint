@@ -7,6 +7,7 @@
     <idea-version since-build="223" until-build="253.*"/>
 
     <description><![CDATA[
+    GherkinLint validates BDD Gherkin steps in the editor and enforces team style.
     <b>GherkinLint</b><br/>
     Validate Gherkin steps in‑editor, enforce team style, and reduce duplicate BDD scenarios.
     Built for QA and automation teams who want consistent, clean feature files.

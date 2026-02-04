@@ -52,7 +52,7 @@ Enable **Custom rules** and provide a JSON file to apply your team’s validatio
 Do not submit sensitive data. Selected text (and custom rules, if enabled) are sent to the Gemini API for validation.
 
 ## Support
-For support, use the vendor contact listed on the Marketplace page.
+For support or bug reports, please raise a GitHub issue.
 <!-- Plugin description end -->
 
 ## Development
