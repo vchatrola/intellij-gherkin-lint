@@ -54,14 +54,25 @@ public class GherkinLintConfigurable implements Configurable {
     settings.geminiModel = gherkinLintSettingsUI.getGeminiModel();
     String apiKey = gherkinLintSettingsUI.getApiKey();
     if (!apiKey.isEmpty()) {
-      GherkinLintSecrets.saveApiKey(apiKey);
-      com.vchatrola.gemini.service.GeminiService.clearCachedModels();
+      com.intellij.openapi.application.ApplicationManager.getApplication()
+          .executeOnPooledThread(
+              () -> {
+                GherkinLintSecrets.saveApiKey(apiKey);
+                com.vchatrola.gemini.service.GeminiService.clearCachedModels();
+                javax.swing.SwingUtilities.invokeLater(
+                    () -> {
+                      if (gherkinLintSettingsUI != null) {
+                        gherkinLintSettingsUI.resetApiKeyField();
+                      }
+                    });
+              });
+    } else {
+      gherkinLintSettingsUI.resetApiKeyField();
     }
     if (previousCustomEnabled != customEnabled
         || !previousCustomFile.equals(settings.customFilePath)) {
       com.vchatrola.config.ConfigurationManager.invalidateCache();
     }
-    gherkinLintSettingsUI.resetApiKeyField();
     gherkinLintSettingsUI.setCustomLogicEnabled(customEnabled);
     gherkinLintSettingsUI.updateCustomRulesWarning();
   }

@@ -28,7 +28,6 @@ import com.vchatrola.prompt.PromptBuilder;
 import com.vchatrola.util.Constants;
 import com.vchatrola.util.GherkinLintLogger;
 import com.vchatrola.util.GherkinOutputParser;
-import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -118,22 +117,14 @@ public class GherkinLintAction extends AnAction {
       return;
     }
 
-    try {
-      GherkinLintSettingsManager settingsManager = new GherkinLintSettingsManager();
-      ConfigurationManager configurationManager = new ConfigurationManager();
-      JsonNode jsonNode = configurationManager.getFinalConfiguration();
-      PromptBuilder promptBuilder = new PromptBuilder(jsonNode, fileType);
-      String prompt =
-          promptBuilder.buildPrompt(selectedText, !settingsManager.isCustomLogicEnabled());
-      String selectedModel = settingsManager.getGeminiModel();
-      runValidationTask(project, consoleView, prompt, selectedModel);
-    } catch (IOException e) {
-      reportError(consoleView, Constants.UNKNOWN_ERROR, e.getMessage());
-    }
+    runValidationTask(project, consoleView, selectedText, fileType);
   }
 
   private void runValidationTask(
-      @Nullable Project project, ConsoleView consoleView, String prompt, @Nullable String model) {
+      @Nullable Project project,
+      ConsoleView consoleView,
+      String selectedText,
+      @Nullable String selectedFileType) {
     ProgressManager.getInstance()
         .run(
             new Task.Backgroundable(project, "Validating gherkin text") {
@@ -142,6 +133,15 @@ public class GherkinLintAction extends AnAction {
                 String response;
                 try {
                   indicator.setText("Validating Gherkin...");
+
+                  GherkinLintSettingsManager settingsManager = new GherkinLintSettingsManager();
+                  ConfigurationManager configurationManager = new ConfigurationManager();
+                  JsonNode jsonNode = configurationManager.getFinalConfiguration();
+                  PromptBuilder promptBuilder = new PromptBuilder(jsonNode, selectedFileType);
+                  String prompt =
+                      promptBuilder.buildPrompt(
+                          selectedText, !settingsManager.isCustomLogicEnabled());
+                  String model = settingsManager.getGeminiModel();
 
                   GeminiService service = getGeminiService();
                   if (service == null) {

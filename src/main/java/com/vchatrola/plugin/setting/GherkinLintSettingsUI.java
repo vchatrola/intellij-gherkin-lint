@@ -78,7 +78,8 @@ public class GherkinLintSettingsUI {
     clearApiKeyButton = createClearApiKeyButton();
     privacyNoticeLabel = createPrivacyNoticeLabel();
     instructionsLabel = createInstructionsLabel();
-    loadCachedModels(modelComboBox);
+    SwingUtilities.invokeLater(() -> loadCachedModels(modelComboBox));
+    refreshApiKeyStatusAsync();
 
     // Add components to form panel using FormBuilder
     JPanel formPanel =
@@ -278,7 +279,7 @@ public class GherkinLintSettingsUI {
   }
 
   private JBLabel createApiKeyStatusLabel() {
-    JBLabel label = new JBLabel(getApiKeyStatusText());
+    JBLabel label = new JBLabel("Checking API key status...");
     label.setForeground(JBColor.GRAY);
     return label;
   }
@@ -294,8 +295,8 @@ public class GherkinLintSettingsUI {
     return label;
   }
 
-  private String getApiKeyStatusText() {
-    return GherkinLintSecrets.hasApiKey()
+  private String getApiKeyStatusText(boolean hasApiKey) {
+    return hasApiKey
         ? "API key stored securely in IDE."
         : "No API key stored. Environment variable GOOGLE_API_KEY will be used if set.";
   }
@@ -304,8 +305,12 @@ public class GherkinLintSettingsUI {
     JButton button = new JButton("Clear Stored Key");
     button.addActionListener(
         e -> {
-          GherkinLintSecrets.saveApiKey("");
-          resetApiKeyField();
+          ApplicationManager.getApplication()
+              .executeOnPooledThread(
+                  () -> {
+                    GherkinLintSecrets.saveApiKey("");
+                    SwingUtilities.invokeLater(this::resetApiKeyField);
+                  });
         });
     return button;
   }
@@ -388,6 +393,9 @@ public class GherkinLintSettingsUI {
   private void setModelStatus(String message, JBColor color) {
     SwingUtilities.invokeLater(
         () -> {
+          if (modelStatusLabel == null) {
+            return;
+          }
           modelStatusLabel.setText(message);
           modelStatusLabel.setForeground(color);
         });
@@ -402,7 +410,7 @@ public class GherkinLintSettingsUI {
   }
 
   private void updateModelDetails() {
-    if (modelComboBox == null) {
+    if (modelComboBox == null || modelDetailsLabel == null) {
       return;
     }
     ModelOption option = (ModelOption) modelComboBox.getSelectedItem();
@@ -458,19 +466,27 @@ public class GherkinLintSettingsUI {
     state.geminiModelsFetchedAt = 0L;
     modelDetailsByName.clear();
     modelOrder.clear();
-    modelComboBox.removeAllItems();
-    modelComboBox.addItem(ModelOption.auto());
+    if (modelComboBox != null) {
+      modelComboBox.removeAllItems();
+      modelComboBox.addItem(ModelOption.auto());
+    }
     updateFetchedAtLabel(0L);
     setModelStatus("Model cache cleared. Using Auto by default.", JBColor.GRAY);
     updateModelDetails();
   }
 
   private void updateFetchedAtLabel(long fetchedAt) {
-    if (fetchedAt <= 0L) {
-      modelFetchedAtLabel.setText("Last fetched: never");
-      return;
-    }
-    modelFetchedAtLabel.setText("Last fetched: " + new java.util.Date(fetchedAt));
+    SwingUtilities.invokeLater(
+        () -> {
+          if (modelFetchedAtLabel == null) {
+            return;
+          }
+          if (fetchedAt <= 0L) {
+            modelFetchedAtLabel.setText("Last fetched: never");
+            return;
+          }
+          modelFetchedAtLabel.setText("Last fetched: " + new java.util.Date(fetchedAt));
+        });
   }
 
   private GeminiService getGeminiService() {
@@ -526,7 +542,21 @@ public class GherkinLintSettingsUI {
 
   public void resetApiKeyField() {
     apiKeyField.setText("");
-    apiKeyStatusLabel.setText(getApiKeyStatusText());
+    refreshApiKeyStatusAsync();
+  }
+
+  private void refreshApiKeyStatusAsync() {
+    if (apiKeyStatusLabel == null) {
+      return;
+    }
+    apiKeyStatusLabel.setText("Checking API key status...");
+    ApplicationManager.getApplication()
+        .executeOnPooledThread(
+            () -> {
+              boolean hasKey = GherkinLintSecrets.hasApiKey();
+              SwingUtilities.invokeLater(
+                  () -> apiKeyStatusLabel.setText(getApiKeyStatusText(hasKey)));
+            });
   }
 
   public String getGeminiModel() {

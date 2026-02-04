@@ -4,11 +4,10 @@
 
 ## [Unreleased]
 
-## [0.0.1] - 2026-02-03
+## [0.1.0] - 2026-02-03
 ### Added
-- Initial public release of GherkinLint.
-### Changed
-- Gemini API integration with model selection, caching, and usage metadata logs.
-- Settings UI with API key storage, model loading, and custom rules support.
-### Fixed
-- Parsing and validation error handling for malformed Gemini responses.
+- Initial Marketplace release of GherkinLint.
+- In‑editor validation for Gherkin steps (Scenario/Given/When/Then/And/But).
+- Gemini AI suggestions with model selection and caching.
+- Custom rules support with sample file generation.
+- Dedicated tool window for results.
