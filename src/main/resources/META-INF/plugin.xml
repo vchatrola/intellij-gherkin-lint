@@ -2,15 +2,14 @@
 <idea-plugin>
     <id>com.vchatrola.gherkinlint</id>
     <name>GherkinLint</name>
-    <vendor email="vivekchatrola007@gmail.com" url="https://wiseadvert.com/">Vivek Chatrola</vendor>
-    <url>https://wiseadvert.com/</url>
+    <vendor email="viveknchatrola@gmail.com" url="https://www.linkedin.com/in/viveknchatrola/">Vivek Chatrola</vendor>
+    <category>Testing</category>
     <idea-version since-build="223" until-build="253.*"/>
 
     <description><![CDATA[
-    <b>GherkinLint: Validate Your BDD Feature Files (IntelliJ Plugin)</b><br/>
-    Write high-quality & consistent BDD features with GherkinLint.
-    Leveraging powerful language models, it validates syntax, suggests improvements, and boosts maintainability.
-    Save time, improve readability, and strengthen BDD automation.
+    <b>GherkinLint</b><br/>
+    Validate Gherkin steps in‑editor, enforce team style, and reduce duplicate BDD scenarios.
+    Built for QA and automation teams who want consistent, clean feature files.
 ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
