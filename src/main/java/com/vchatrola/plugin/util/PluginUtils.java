@@ -1,6 +1,8 @@
 package com.vchatrola.plugin.util;
 
+import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
@@ -29,9 +31,14 @@ public class PluginUtils {
   @Nullable
   public static ConsoleView createConsoleView(AnActionEvent event) {
     try {
-      return TextConsoleBuilderFactory.getInstance()
-          .createBuilder(Objects.requireNonNull(event.getProject()))
-          .getConsole();
+      TextConsoleBuilder builder =
+          TextConsoleBuilderFactory.getInstance()
+              .createBuilder(Objects.requireNonNull(event.getProject()));
+      ConsoleView consoleView = builder.getConsole();
+      if (consoleView instanceof ConsoleViewImpl consoleViewImpl) {
+        enableSoftWraps(consoleViewImpl);
+      }
+      return consoleView;
     } catch (Exception e) {
       GherkinLintLogger.error("Failed to create console view.", e);
       return null;
@@ -92,5 +99,21 @@ public class PluginUtils {
       return words[0].replaceAll("[^a-zA-Z]", "");
     }
     return "";
+  }
+
+  private static void enableSoftWraps(ConsoleViewImpl consoleView) {
+    if (consoleView.getEditor() != null) {
+      consoleView.getEditor().getSettings().setUseSoftWraps(true);
+      return;
+    }
+    com.intellij.openapi.application.ApplicationManager.getApplication()
+        .invokeLater(
+            () -> {
+              if (consoleView.getEditor() != null) {
+                consoleView.getEditor().getSettings().setUseSoftWraps(true);
+              } else {
+                GherkinLintLogger.warn("ConsoleView editor unavailable; soft wraps not enabled.");
+              }
+            });
   }
 }
