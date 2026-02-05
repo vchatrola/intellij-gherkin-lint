@@ -18,7 +18,7 @@ Write consistent, review-ready BDD Gherkin with a single click. GherkinLint vali
 1. Open **Settings | Tools | GherkinLint** and add your Gemini API key.
 2. (Optional) Load models and choose a preferred model.
 3. Select Gherkin text in a `.feature` or `.story` file.
-4. Right-click → **Validate Gherkin**.
+4. Right-click -> **Validate Gherkin**.
 5. View results in the **GherkinLint** tool window.
 
 ## API Key Handling

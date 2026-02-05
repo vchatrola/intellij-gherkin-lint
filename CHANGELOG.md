@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-02-05
+### Fixed
+- Improved logging behavior and reduced noise in production logs.
+- Polished Gemini error handling with clearer UI feedback for key/model/rate-limit cases.
+### Added
+- Verbose logging toggle for debugging model selection and token usage.
+
 ## [0.1.1] - 2026-02-03
 ### Fixed
 - Marketplace preview description formatting (README-only description, ASCII punctuation).
