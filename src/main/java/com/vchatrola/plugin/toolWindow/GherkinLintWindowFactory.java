@@ -30,7 +30,7 @@ public class GherkinLintWindowFactory implements ToolWindowFactory {
       Content content = ContentFactory.getInstance().createContent(contentPanel, "Welcome", false);
       content.setCloseable(false);
       toolWindow.getContentManager().addContent(content);
-      GherkinLintLogger.info("Tool window content created successfully.");
+      GherkinLintLogger.debug("Tool window content created successfully.");
     } catch (Exception e) {
       GherkinLintLogger.error("Failed to create tool window content.", e);
     }

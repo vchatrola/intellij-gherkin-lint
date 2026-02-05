@@ -1,6 +1,7 @@
 package com.vchatrola.plugin.setting;
 
 import com.intellij.openapi.options.Configurable;
+import com.vchatrola.util.GherkinLintLogger;
 import javax.swing.JComponent;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,7 @@ public class GherkinLintConfigurable implements Configurable {
         || !settings.getCustomFilePath().equals(gherkinLintSettingsUI.getCustomFilePath())
         || !settings.getCopyDirectoryPath().equals(gherkinLintSettingsUI.getCopyDirectoryPath())
         || !settings.getGeminiModel().equals(gherkinLintSettingsUI.getGeminiModel())
+        || settings.isVerboseLogging() != gherkinLintSettingsUI.isVerboseLoggingEnabled()
         || !apiKey.isEmpty();
   }
 
@@ -49,6 +51,8 @@ public class GherkinLintConfigurable implements Configurable {
       customEnabled = false;
     }
     settings.customLogicEnabled = customEnabled;
+    settings.verboseLogging = gherkinLintSettingsUI.isVerboseLoggingEnabled();
+    GherkinLintLogger.setVerboseEnabled(settings.verboseLogging);
     settings.customFilePath = gherkinLintSettingsUI.getCustomFilePath();
     settings.copyDirectoryPath = gherkinLintSettingsUI.getCopyDirectoryPath();
     settings.geminiModel = gherkinLintSettingsUI.getGeminiModel();
@@ -84,6 +88,8 @@ public class GherkinLintConfigurable implements Configurable {
     }
     GherkinLintSettingsState settings = GherkinLintSettingsState.getInstance();
     gherkinLintSettingsUI.setCustomLogicEnabled(settings.customLogicEnabled);
+    gherkinLintSettingsUI.setVerboseLoggingEnabled(settings.verboseLogging);
+    GherkinLintLogger.setVerboseEnabled(settings.verboseLogging);
     gherkinLintSettingsUI.setCustomFilePath(settings.customFilePath);
     gherkinLintSettingsUI.setCopyDirectoryPath(settings.copyDirectoryPath);
     gherkinLintSettingsUI.setGeminiModel(settings.geminiModel);

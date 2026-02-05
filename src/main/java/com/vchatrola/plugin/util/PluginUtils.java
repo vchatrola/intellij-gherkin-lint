@@ -57,7 +57,7 @@ public class PluginUtils {
               .createContent(consoleView.getComponent(), contentName, false);
       content.setCloseable(true);
       toolWindow.getContentManager().addContent(content);
-      GherkinLintLogger.info("Content created and added to tool window with name: " + contentName);
+      GherkinLintLogger.debug("Content created and added to tool window.");
       return content;
     } catch (Exception e) {
       GherkinLintLogger.error("Failed to create content for tool window.", e);

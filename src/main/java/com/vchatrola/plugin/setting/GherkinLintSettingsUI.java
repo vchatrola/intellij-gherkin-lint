@@ -52,6 +52,7 @@ public class GherkinLintSettingsUI {
   private final JPasswordField apiKeyField;
   private final JBLabel apiKeyStatusLabel;
   private final JButton clearApiKeyButton;
+  private final JBCheckBox verboseLoggingCheckBox;
   private final JBLabel privacyNoticeLabel;
   private final JBLabel instructionsLabel;
   private final Map<String, GeminiRecords.Model> modelDetailsByName = new HashMap<>();
@@ -76,6 +77,7 @@ public class GherkinLintSettingsUI {
     apiKeyField = createApiKeyField();
     apiKeyStatusLabel = createApiKeyStatusLabel();
     clearApiKeyButton = createClearApiKeyButton();
+    verboseLoggingCheckBox = createVerboseLoggingCheckBox();
     privacyNoticeLabel = createPrivacyNoticeLabel();
     instructionsLabel = createInstructionsLabel();
     SwingUtilities.invokeLater(() -> loadCachedModels(modelComboBox));
@@ -117,6 +119,10 @@ public class GherkinLintSettingsUI {
             .addComponent(modelCacheNoteLabel)
             .addVerticalGap(4)
             .addComponent(modelInfoPanel)
+            .addVerticalGap(8)
+            .addComponent(new TitledSeparator("Advanced"))
+            .addVerticalGap(4)
+            .addComponent(verboseLoggingCheckBox)
             .addVerticalGap(8)
             .getPanel();
 
@@ -295,6 +301,12 @@ public class GherkinLintSettingsUI {
     return label;
   }
 
+  private JBCheckBox createVerboseLoggingCheckBox() {
+    JBCheckBox checkBox = new JBCheckBox("Enable verbose logging (for debugging)");
+    checkBox.setToolTipText("Enable extra debug logs like model selection and token usage.");
+    return checkBox;
+  }
+
   private String getApiKeyStatusText(boolean hasApiKey) {
     return hasApiKey
         ? "API key stored securely in IDE."
@@ -353,15 +365,31 @@ public class GherkinLintSettingsUI {
               if (service == null) {
                 setModelStatus(
                     "Gemini service unavailable. Using Auto (server default).", JBColor.RED);
-                GherkinLintLogger.warn("Gemini service unavailable while loading models.");
+                GherkinLintLogger.debug("Gemini service unavailable while loading models.");
                 return;
               }
               GeminiService.clearCachedModels();
-              List<GeminiRecords.Model> models = service.getAvailableModels();
+              List<GeminiRecords.Model> models;
+              try {
+                models = service.getAvailableModels();
+              } catch (com.vchatrola.gemini.api.GeminiApiException ex) {
+                setModelStatus(
+                    "Unable to load models. Check your API key and try again.", JBColor.RED);
+                GherkinLintLogger.debug("Failed to load Gemini models: " + ex.getShortReason());
+                return;
+              } catch (IllegalStateException ex) {
+                setModelStatus("API key missing. Using Auto (server default).", JBColor.RED);
+                GherkinLintLogger.debug("Gemini API key is missing.");
+                return;
+              } catch (RuntimeException ex) {
+                setModelStatus("Unable to load models. Using Auto (server default).", JBColor.RED);
+                GherkinLintLogger.debug("Failed to load Gemini models.");
+                return;
+              }
               if (models == null || models.isEmpty()) {
                 setModelStatus(
                     "No models loaded from Gemini. Using Auto (server default).", JBColor.RED);
-                GherkinLintLogger.warn("No Gemini models returned by API.");
+                GherkinLintLogger.debug("No Gemini models returned by API.");
                 return;
               }
 
@@ -379,7 +407,8 @@ public class GherkinLintSettingsUI {
                     }
                     setModelStatus("Model list loaded from Gemini.", JBColor.GREEN);
                     persistModelCache(modelOrder);
-                    GherkinLintLogger.info("Loaded " + modelOrder.size() + " Gemini models.");
+                    GherkinLintLogger.debugVerbose(
+                        "Loaded " + modelOrder.size() + " Gemini models.");
                     if (!modelOrder.isEmpty() && isAutoSelected()) {
                       comboBox.setSelectedItem(
                           new ModelOption(modelOrder.get(0), modelOrder.get(0)));
@@ -543,6 +572,14 @@ public class GherkinLintSettingsUI {
   public void resetApiKeyField() {
     apiKeyField.setText("");
     refreshApiKeyStatusAsync();
+  }
+
+  public boolean isVerboseLoggingEnabled() {
+    return verboseLoggingCheckBox.isSelected();
+  }
+
+  public void setVerboseLoggingEnabled(boolean enabled) {
+    verboseLoggingCheckBox.setSelected(enabled);
   }
 
   private void refreshApiKeyStatusAsync() {

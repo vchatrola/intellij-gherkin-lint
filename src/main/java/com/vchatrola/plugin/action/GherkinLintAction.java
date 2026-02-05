@@ -20,6 +20,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.content.Content;
 import com.vchatrola.config.ConfigurationManager;
+import com.vchatrola.gemini.api.GeminiApiException;
 import com.vchatrola.gemini.service.GeminiService;
 import com.vchatrola.plugin.service.GherkinLintServiceImpl;
 import com.vchatrola.plugin.setting.GherkinLintSettingsManager;
@@ -45,14 +46,14 @@ public class GherkinLintAction extends AnAction {
 
     ToolWindow toolWindow = PluginUtils.getToolWindow(event, Constants.TOOL_WINDOW_ID);
     if (toolWindow == null) {
-      GherkinLintLogger.error("ToolWindow with ID " + Constants.TOOL_WINDOW_ID + " not found.");
+      GherkinLintLogger.warn("ToolWindow not found for GherkinLint action.");
       return;
     }
     toolWindow.setAutoHide(false);
 
     ConsoleView consoleView = PluginUtils.createConsoleView(event);
     if (consoleView == null) {
-      GherkinLintLogger.error("Failed to create ConsoleView.");
+      GherkinLintLogger.warn("Failed to create ConsoleView.");
       return;
     }
 
@@ -86,7 +87,7 @@ public class GherkinLintAction extends AnAction {
 
     fileType = psiFile.getFileType().getDefaultExtension();
     if (!Constants.SUPPORTED_EXTENSIONS.contains(fileType)) {
-      GherkinLintLogger.info(
+      GherkinLintLogger.debug(
           "Validation is not applicable: Unsupported file extension: " + fileType);
       return false;
     }
@@ -96,7 +97,7 @@ public class GherkinLintAction extends AnAction {
     String firstWord = PluginUtils.getFirstKeywordToken(firstLine);
 
     if (!Constants.GHERKIN_KEYWORDS.contains(firstWord)) {
-      GherkinLintLogger.info(
+      GherkinLintLogger.debug(
           "Validation is not applicable: First word is not a Gherkin keyword: " + firstWord);
       return false;
     }
@@ -112,7 +113,7 @@ public class GherkinLintAction extends AnAction {
       return;
     }
     if (isThrottled()) {
-      reportError(consoleView, Constants.VALIDATION_THROTTLED_ERROR, null);
+      showUserMessage(consoleView, Constants.VALIDATION_THROTTLED_ERROR);
       notifyWarning(project, "Validation throttled", Constants.VALIDATION_THROTTLED_ERROR);
       return;
     }
@@ -145,62 +146,29 @@ public class GherkinLintAction extends AnAction {
 
                   GeminiService service = getGeminiService();
                   if (service == null) {
-                    reportError(consoleView, Constants.GEMINI_SERVICE_ACCESS_ERROR, null);
+                    showUserMessage(consoleView, Constants.GEMINI_SERVICE_ACCESS_ERROR);
                     return;
                   }
 
                   response = service.getCompletion(prompt, model);
-                  GherkinLintLogger.debug("Original Gemini response: " + response);
+                  if (response != null) {
+                    GherkinLintLogger.debugVerbose(
+                        "Received Gemini response (" + response.length() + " chars).");
+                  }
                   if (StringUtils.isBlank(response)) {
-                    reportError(
-                        consoleView,
-                        Constants.NO_GEMINI_SERVICE_RESPONSE_ERROR,
-                        "Gemini response is blank or null.");
+                    showUserMessage(consoleView, Constants.NO_GEMINI_SERVICE_RESPONSE_ERROR);
                     return;
                   }
 
                   String finalResponse = GherkinOutputParser.parseOutput(response);
                   if (StringUtils.isBlank(finalResponse)) {
-                    reportError(
-                        consoleView,
-                        Constants.UNKNOWN_ERROR,
-                        "Parsed Gemini response is blank or null.");
+                    showUserMessage(consoleView, Constants.UNKNOWN_ERROR);
                     return;
                   }
 
                   handleValidResponseAsync(indicator, finalResponse, consoleView);
                 } catch (Exception ex) {
-                  reportError(consoleView, Constants.UNKNOWN_ERROR, ex.getMessage());
-                  String message = ex.getMessage();
-                  if (ex instanceof IllegalStateException
-                      && message != null
-                      && message.contains("No Gemini models available")) {
-                    notifyError(
-                        project,
-                        "Gemini models unavailable",
-                        "Could not load models from Gemini. Check API key and connectivity.");
-                  } else if (ex instanceof IllegalStateException
-                      && message != null
-                      && message.contains("Gemini API key is missing")) {
-                    notifyError(
-                        project,
-                        "Gemini API key missing",
-                        "Set the key in settings or GOOGLE_API_KEY, then try again.");
-                  } else if (isModelNotFoundError(message)) {
-                    notifyError(
-                        project,
-                        "Gemini model unavailable",
-                        "Default model is unavailable. Load models in settings and select another.");
-                  } else if (ex instanceof IllegalArgumentException
-                      && message != null
-                      && (message.contains("JSON") || message.contains("Gemini response"))) {
-                    notifyError(project, "Invalid Gemini response", message);
-                  } else if (isRateLimitError(message)) {
-                    notifyError(
-                        project,
-                        "Gemini rate limit exceeded",
-                        "Request quota exceeded. Try again later or check your Gemini usage limits.");
-                  }
+                  handleException(consoleView, project, ex);
                 }
               }
             });
@@ -214,7 +182,7 @@ public class GherkinLintAction extends AnAction {
           try {
             printStyledOutput(finalResponse, consoleView);
             indicator.setText("Validation complete");
-            GherkinLintLogger.info("Gherkin text validated and ToolWindow content activated.");
+            GherkinLintLogger.debug("Gherkin text validated and ToolWindow content activated.");
           } catch (Exception ex) {
             reportError(
                 consoleView,
@@ -261,8 +229,13 @@ public class GherkinLintAction extends AnAction {
 
   private void reportError(
       ConsoleView consoleView, String errorMessage, @Nullable String additionalInfo) {
-    GherkinLintLogger.error(errorMessage + (additionalInfo != null ? ": " + additionalInfo : ""));
+    GherkinLintLogger.error(errorMessage);
     consoleView.print(errorMessage, ConsoleViewContentType.ERROR_OUTPUT);
+  }
+
+  private void showUserMessage(ConsoleView consoleView, String message) {
+    GherkinLintLogger.debug(message);
+    consoleView.print(message, ConsoleViewContentType.ERROR_OUTPUT);
   }
 
   private void notifyError(@Nullable Project project, String title, String message) {
@@ -300,7 +273,7 @@ public class GherkinLintAction extends AnAction {
 
   private boolean isEmptyOrInvalidText(String text, ConsoleView consoleView) {
     if (text == null || text.trim().isEmpty()) {
-      reportError(consoleView, Constants.NO_GHERKIN_TEXT_SELECTED_ERROR, null);
+      showUserMessage(consoleView, Constants.NO_GHERKIN_TEXT_SELECTED_ERROR);
       return true;
     }
     return false;
@@ -308,7 +281,7 @@ public class GherkinLintAction extends AnAction {
 
   private boolean isTooShort(String text, ConsoleView consoleView) {
     if (text.trim().split("\\s+").length < 4) {
-      reportError(consoleView, Constants.GHERKIN_TEXT_TOO_SHORT_ERROR, null);
+      showUserMessage(consoleView, Constants.GHERKIN_TEXT_TOO_SHORT_ERROR);
       return true;
     }
     return false;
@@ -320,10 +293,99 @@ public class GherkinLintAction extends AnAction {
         || StringUtils.equalsAnyIgnoreCase(
             Constants.BUT_KEYWORD, PluginUtils.getFirstKeywordToken(text))
         || StringUtils.startsWith(text, Constants.ASTERISK_KEYWORD)) {
-      reportError(consoleView, Constants.GHERKIN_NO_CONTEXT_ERROR, null);
+      showUserMessage(consoleView, Constants.GHERKIN_NO_CONTEXT_ERROR);
       return true;
     }
     return false;
+  }
+
+  private void handleException(ConsoleView consoleView, @Nullable Project project, Exception ex) {
+    String message = ex.getMessage();
+    if (ex instanceof GeminiApiException apiException) {
+      handleGeminiApiException(consoleView, project, apiException);
+      return;
+    }
+    if (ex instanceof IllegalStateException && message != null) {
+      if (message.contains("No Gemini models available")) {
+        showUserMessage(consoleView, Constants.NO_GEMINI_MODELS_AVAILABLE);
+        notifyWarning(
+            project, "Gemini models unavailable", "Load models in settings and select another.");
+        return;
+      }
+      if (message.contains("Gemini API key is missing")) {
+        showUserMessage(consoleView, "No Gemini API key found. Update it in settings.");
+        notifyWarning(
+            project,
+            "Gemini API key missing",
+            "Set the key in settings or GOOGLE_API_KEY, then try again.");
+        return;
+      }
+    }
+    if (isModelNotFoundError(message)) {
+      showUserMessage(consoleView, "Selected Gemini model is unavailable.");
+      notifyWarning(
+          project, "Gemini model unavailable", "Load models in settings and select another.");
+      return;
+    }
+    if (ex instanceof IllegalArgumentException
+        && message != null
+        && (message.contains("JSON") || message.contains("Gemini response"))) {
+      showUserMessage(consoleView, Constants.UNKNOWN_ERROR);
+      notifyWarning(project, "Invalid Gemini response", "Gemini returned an invalid response.");
+      return;
+    }
+    if (isRateLimitError(message)) {
+      showUserMessage(consoleView, Constants.GEMINI_RATE_LIMIT_ERROR);
+      notifyWarning(
+          project,
+          "Gemini rate limit exceeded",
+          "Request quota exceeded. Try again later or check your Gemini usage limits.");
+      return;
+    }
+    reportError(consoleView, Constants.UNKNOWN_ERROR, ex.getMessage());
+  }
+
+  private void handleGeminiApiException(
+      ConsoleView consoleView, @Nullable Project project, GeminiApiException ex) {
+    String reason = ex.getShortReason();
+    String message = ex.getMessage() != null ? ex.getMessage() : "";
+    int statusCode = ex.getStatusCode();
+    if (isInvalidApiKeyError(ex.getStatusCode(), reason, message)) {
+      showUserMessage(consoleView, "Invalid API key. Please update it in settings.");
+      notifyWarning(project, "Invalid API key", "Update your Gemini API key in settings.");
+      GherkinLintLogger.info("Gemini request failed: " + statusCode + " " + reason);
+      return;
+    }
+    if (statusCode == 404 || isModelNotFoundError(message)) {
+      showUserMessage(consoleView, "Selected Gemini model is unavailable.");
+      notifyWarning(
+          project, "Gemini model unavailable", "Load models in settings and select another.");
+      GherkinLintLogger.info("Gemini request failed: " + statusCode + " " + reason);
+      return;
+    }
+    if (statusCode == 429 || isRateLimitError(message)) {
+      showUserMessage(consoleView, Constants.GEMINI_RATE_LIMIT_ERROR);
+      notifyWarning(
+          project,
+          "Gemini rate limit exceeded",
+          "Request quota exceeded. Try again later or check your Gemini usage limits.");
+      GherkinLintLogger.info("Gemini request failed: " + statusCode + " " + reason);
+      return;
+    }
+    if (statusCode >= 500) {
+      GherkinLintLogger.warn("Gemini request failed: " + statusCode + " " + reason);
+    } else {
+      GherkinLintLogger.info("Gemini request failed: " + statusCode + " " + reason);
+    }
+    showUserMessage(consoleView, "Gemini request failed. Please try again.");
+  }
+
+  private boolean isInvalidApiKeyError(int statusCode, String reason, String message) {
+    String combined = (reason + " " + message).toLowerCase();
+    return statusCode == 400
+        && (combined.contains("api_key_invalid")
+            || combined.contains("invalid_argument")
+            || combined.contains("invalid api key"));
   }
 
   private GeminiService getGeminiService() {

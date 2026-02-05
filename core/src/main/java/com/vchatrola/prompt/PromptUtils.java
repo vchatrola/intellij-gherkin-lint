@@ -1,12 +1,9 @@
 package com.vchatrola.prompt;
 
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PromptUtils {
-  private static final Logger LOGGER = Logger.getLogger(PromptUtils.class.getName());
-
   public static String removeEmptyLines(String input) {
     Pattern pattern = Pattern.compile("(?m)^\\s*$[\r\n]*");
     Matcher matcher = pattern.matcher(input);
@@ -15,7 +12,6 @@ public class PromptUtils {
 
   public static String generateSpaces(int numSpaces) {
     if (numSpaces < 0) {
-      LOGGER.severe("Number of spaces cannot be negative");
       return "";
     }
 

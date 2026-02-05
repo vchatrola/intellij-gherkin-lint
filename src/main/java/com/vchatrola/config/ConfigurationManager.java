@@ -2,16 +2,15 @@ package com.vchatrola.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vchatrola.plugin.setting.GherkinLintSettingsManager;
+import com.vchatrola.util.GherkinLintLogger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 public class ConfigurationManager {
-  private static final Logger LOGGER = Logger.getLogger(ConfigurationManager.class.getName());
   private static final Object CACHE_LOCK = new Object();
   private static CachedConfig cachedConfig;
 
@@ -62,7 +61,8 @@ public class ConfigurationManager {
         return lastModified.toMillis();
       }
     } catch (IOException e) {
-      LOGGER.warning("Failed to read last modified time for: " + customFilePath);
+      String fileName = path.getFileName() != null ? path.getFileName().toString() : "custom file";
+      GherkinLintLogger.debug("Failed to read last modified time for " + fileName + ".");
     }
     return -1L;
   }
@@ -77,7 +77,7 @@ public class ConfigurationManager {
     synchronized (CACHE_LOCK) {
       cachedConfig = config;
     }
-    LOGGER.info("Configuration cache updated.");
+    GherkinLintLogger.debug("Configuration cache updated.");
   }
 
   private record CachedConfig(

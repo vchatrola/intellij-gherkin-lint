@@ -1,5 +1,6 @@
 package com.vchatrola.gemini.service;
 
+import com.vchatrola.gemini.api.GeminiApiException;
 import com.vchatrola.gemini.api.GeminiClient;
 import com.vchatrola.gemini.api.GeminiHttpClient;
 import com.vchatrola.gemini.dto.GeminiRecords;
@@ -15,20 +16,23 @@ import com.vchatrola.util.GherkinLintLogger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.VisibleForTesting;
 
 public class GeminiService {
   private final GeminiClient geminiClient;
+  private final Supplier<String> apiKeySupplier;
   private static volatile List<GeminiRecords.Model> cachedModels;
 
   public GeminiService() {
-    this(new GeminiHttpClient());
+    this(new GeminiHttpClient(), GherkinLintSecrets::getApiKeyOrEnv);
   }
 
   @VisibleForTesting
-  GeminiService(GeminiClient geminiClient) {
+  GeminiService(GeminiClient geminiClient, Supplier<String> apiKeySupplier) {
     this.geminiClient = geminiClient;
+    this.apiKeySupplier = apiKeySupplier;
   }
 
   public GeminiRecords.ModelList getModels() {
@@ -53,8 +57,10 @@ public class GeminiService {
               modelList.models().stream().filter(Objects::nonNull).collect(Collectors.toList());
           persistModelCache(cachedModels);
         }
+      } catch (GeminiApiException | IllegalStateException e) {
+        throw e;
       } catch (Exception e) {
-        GherkinLintLogger.warn("Failed to load Gemini models. Model list will be empty.", e);
+        GherkinLintLogger.debug("Failed to load Gemini models. Model list will be empty.");
         cachedModels = Collections.emptyList();
       }
     }
@@ -124,7 +130,7 @@ public class GeminiService {
   }
 
   private String getApiKeyOrThrow() {
-    String apiKey = GherkinLintSecrets.getApiKeyOrEnv();
+    String apiKey = apiKeySupplier.get();
     if (isBlank(apiKey)) {
       throw new IllegalStateException(
           "Gemini API key is missing. Set it in settings or GOOGLE_API_KEY.");
@@ -137,7 +143,7 @@ public class GeminiService {
       return;
     }
     UsageMetadata usage = response.usageMetadata();
-    GherkinLintLogger.info(
+    GherkinLintLogger.debugVerbose(
         String.format(
             "Gemini usage - prompt: %d, candidates: %d, total: %d",
             usage.promptTokenCount(), usage.candidatesTokenCount(), usage.totalTokenCount()));
@@ -145,7 +151,7 @@ public class GeminiService {
 
   private String resolveModelOrThrow(String model) {
     if (!isBlank(model)) {
-      GherkinLintLogger.info("Using Gemini model: " + model);
+      GherkinLintLogger.debugVerbose("Using Gemini model: " + model);
       return model;
     }
     List<String> available = getAvailableModelNames();
@@ -153,7 +159,7 @@ public class GeminiService {
       throw new IllegalStateException("No Gemini models available from API.");
     }
     String resolved = available.get(0);
-    GherkinLintLogger.info("Using Gemini model (auto): " + resolved);
+    GherkinLintLogger.debugVerbose("Using Gemini model (auto): " + resolved);
     return resolved;
   }
 

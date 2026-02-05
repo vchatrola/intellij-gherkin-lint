@@ -2,6 +2,7 @@ package com.vchatrola.gemini.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vchatrola.gemini.dto.GeminiRecords;
 import com.vchatrola.util.GherkinLintLogger;
@@ -85,16 +86,16 @@ public class GeminiHttpClient implements GeminiClient {
             httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 400) {
           if (isRetryableStatus(response.statusCode()) && attempt < MAX_ATTEMPTS) {
-            lastError = new RuntimeException(response.statusCode() + " " + response.body());
+            lastError = buildApiException(response);
             backoff(attempt);
             continue;
           }
-          throw new RuntimeException(response.statusCode() + " " + response.body());
+          throw buildApiException(response);
         }
         return objectMapper.readValue(response.body(), type);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        GherkinLintLogger.error("Gemini HTTP request interrupted.", e);
+        GherkinLintLogger.debug("Gemini HTTP request interrupted.");
         throw new RuntimeException("Gemini HTTP request interrupted.", e);
       } catch (IOException e) {
         if (attempt < MAX_ATTEMPTS) {
@@ -102,11 +103,39 @@ public class GeminiHttpClient implements GeminiClient {
           backoff(attempt);
           continue;
         }
-        GherkinLintLogger.error("Gemini HTTP request failed.", e);
+        GherkinLintLogger.debug("Gemini HTTP request failed.");
         throw new RuntimeException("Gemini HTTP request failed.", e);
       }
     }
     throw lastError != null ? lastError : new RuntimeException("Gemini HTTP request failed.");
+  }
+
+  private GeminiApiException buildApiException(HttpResponse<String> response) {
+    int statusCode = response.statusCode();
+    String shortReason = "HTTP " + statusCode;
+    String message = "Gemini API request failed.";
+    try {
+      JsonNode root = objectMapper.readTree(response.body());
+      JsonNode error = root.path("error");
+      if (!error.isMissingNode()) {
+        String status = textOrEmpty(error, "status");
+        String errorMessage = textOrEmpty(error, "message");
+        if (!status.isBlank()) {
+          shortReason = status;
+        }
+        if (!errorMessage.isBlank()) {
+          message = errorMessage;
+        }
+      }
+    } catch (Exception ignored) {
+      // Ignore parsing errors to keep logs clean.
+    }
+    return new GeminiApiException(statusCode, shortReason, message);
+  }
+
+  private static String textOrEmpty(JsonNode node, String field) {
+    JsonNode value = node.get(field);
+    return value == null ? "" : value.asText("");
   }
 
   private static boolean isRetryableStatus(int statusCode) {

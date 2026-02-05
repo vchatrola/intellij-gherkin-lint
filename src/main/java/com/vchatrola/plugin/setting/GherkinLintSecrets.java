@@ -3,7 +3,6 @@ package com.vchatrola.plugin.setting;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.ide.passwordSafe.PasswordSafe;
-import com.vchatrola.util.GherkinLintLogger;
 
 public final class GherkinLintSecrets {
   private static final String SERVICE_NAME = "GherkinLint:GeminiApiKey";
@@ -30,27 +29,13 @@ public final class GherkinLintSecrets {
   public static String getApiKeyOrEnv() {
     String stored = loadApiKey();
     if (!stored.isBlank()) {
-      GherkinLintLogger.info("Using Gemini API key from IDE storage (masked): " + maskKey(stored));
       return stored;
     }
     String env = System.getenv("GOOGLE_API_KEY");
-    if (env != null && !env.isBlank()) {
-      GherkinLintLogger.info("Using Gemini API key from environment (masked): " + maskKey(env));
-    }
     return env == null ? "" : env;
   }
 
   public static boolean hasApiKey() {
     return !loadApiKey().isBlank();
-  }
-
-  private static String maskKey(String key) {
-    String trimmed = key == null ? "" : key.trim();
-    if (trimmed.isEmpty()) {
-      return "<empty>";
-    }
-    int keep = Math.min(4, trimmed.length());
-    String suffix = trimmed.substring(trimmed.length() - keep);
-    return "****" + suffix + " (len=" + trimmed.length() + ")";
   }
 }

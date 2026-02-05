@@ -2,23 +2,21 @@ package com.vchatrola.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vchatrola.util.GherkinLintLogger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 public class ConfigurationLoader {
-  private static final Logger LOGGER = Logger.getLogger(ConfigurationLoader.class.getName());
-
   public JsonNode loadDefaultConfiguration() throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     try (InputStream inputStream =
         getClass().getClassLoader().getResourceAsStream("default-rules.json")) {
       if (inputStream == null) {
-        LOGGER.severe(
+        GherkinLintLogger.error(
             "Failed to load default configuration file from classpath: " + "default-rules.json");
         throw new FileNotFoundException("Default configuration file not found in classpath");
       }
@@ -28,25 +26,22 @@ public class ConfigurationLoader {
 
   public JsonNode loadCustomConfiguration(String customConfigPath) {
     if (customConfigPath == null || customConfigPath.isEmpty()) {
-      LOGGER.warning("Custom configuration path is empty or null. Returning null.");
+      GherkinLintLogger.debug("Custom configuration path is empty or null. Returning null.");
       return null;
     }
     ObjectMapper mapper = new ObjectMapper();
     Path path = Paths.get(customConfigPath);
+    String fileName = path.getFileName() != null ? path.getFileName().toString() : "custom rules";
     try {
       if (!Files.exists(path)) {
-        throw new FileNotFoundException("Custom configuration file not found: " + customConfigPath);
+        throw new FileNotFoundException("Custom configuration file not found.");
       }
       return mapper.readTree(path.toFile());
     } catch (FileNotFoundException e) {
-      LOGGER.severe("Custom configuration file not found: " + customConfigPath);
+      GherkinLintLogger.info("Custom configuration file not found: " + fileName);
       return null;
     } catch (IOException e) {
-      LOGGER.severe(
-          "Error while reading custom configuration file: "
-              + customConfigPath
-              + ", "
-              + e.getMessage());
+      GherkinLintLogger.info("Error while reading custom configuration file: " + fileName);
       return null;
     }
   }

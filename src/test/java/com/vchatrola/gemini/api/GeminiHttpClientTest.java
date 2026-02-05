@@ -62,9 +62,9 @@ class GeminiHttpClientTest {
             .enqueue(new StubResponse(503, "service down"));
     GeminiHttpClient client = new GeminiHttpClient(stub, defaultMapper());
 
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> client.getModels("key"));
+    GeminiApiException ex = assertThrows(GeminiApiException.class, () -> client.getModels("key"));
 
-    assertTrue(ex.getMessage().contains("503"));
+    assertEquals(503, ex.getStatusCode());
     assertEquals(3, stub.requests.size());
   }
 
@@ -87,10 +87,24 @@ class GeminiHttpClientTest {
     StubHttpClient stub = new StubHttpClient().enqueue(new StubResponse(400, "bad request"));
     GeminiHttpClient client = new GeminiHttpClient(stub, defaultMapper());
 
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> client.getModels("key"));
+    GeminiApiException ex = assertThrows(GeminiApiException.class, () -> client.getModels("key"));
 
-    assertTrue(ex.getMessage().contains("400"));
+    assertEquals(400, ex.getStatusCode());
     assertEquals(1, stub.requests.size());
+  }
+
+  @Test
+  void getModels_parsesApiErrorDetails() {
+    String errorJson =
+        "{\"error\":{\"code\":400,\"message\":\"API key not valid\",\"status\":\"INVALID_ARGUMENT\"}}";
+    StubHttpClient stub = new StubHttpClient().enqueue(new StubResponse(400, errorJson));
+    GeminiHttpClient client = new GeminiHttpClient(stub, defaultMapper());
+
+    GeminiApiException ex = assertThrows(GeminiApiException.class, () -> client.getModels("key"));
+
+    assertEquals(400, ex.getStatusCode());
+    assertEquals("INVALID_ARGUMENT", ex.getShortReason());
+    assertEquals("API key not valid", ex.getMessage());
   }
 
   @Test

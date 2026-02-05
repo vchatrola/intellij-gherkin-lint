@@ -40,6 +40,10 @@ public class Constants {
       "Please wait a moment before validating again.";
   public static final String NO_GEMINI_SERVICE_RESPONSE_ERROR =
       "No response received from the Gemini service.";
+  public static final String NO_GEMINI_MODELS_AVAILABLE =
+      "No Gemini models available. Load models in settings and select one.";
+  public static final String GEMINI_RATE_LIMIT_ERROR =
+      "Gemini rate limit exceeded. Try again later or check your usage limits.";
   public static final String UNKNOWN_ERROR =
       "An error occurred during Gherkin text validation task execution.";
   public static final String CONSOLE_OUTPUT_PRINT_FAILURE = "Failed to print console output.";

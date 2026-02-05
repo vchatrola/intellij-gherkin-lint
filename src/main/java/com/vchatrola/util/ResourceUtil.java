@@ -32,23 +32,19 @@ public class ResourceUtil {
       // Overwrite existing files by default
       Files.copy(resourceStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
 
-      String message =
-          String.format(
-              "Resource '%s' copied to file '%s' successfully.", resourcePath, targetPath);
-      GherkinLintLogger.info(message);
+      String message = String.format("Resource '%s' copied successfully.", resourcePath);
+      GherkinLintLogger.debug(message);
     } catch (IOException e) {
       String message =
-          String.format(
-              "Error copying resource '%s' to file '%s': %s",
-              resourcePath, targetPath, e.getMessage());
-      GherkinLintLogger.error(message, e);
+          String.format("Error copying resource '%s': %s", resourcePath, e.getMessage());
+      GherkinLintLogger.error(message);
       throw e; // Re-throw the exception for caller handling
     }
   }
 
   public static void copySampleFile(String directoryPath) {
     if (StringUtils.isBlank(directoryPath)) {
-      GherkinLintLogger.error("Please specify a directory for the sample file.");
+      GherkinLintLogger.debug("Sample file copy requested without a directory.");
       notifyUser("GherkinLint", "Please specify a directory", NotificationType.ERROR);
       return;
     }
@@ -56,10 +52,10 @@ public class ResourceUtil {
     try {
       String targetFilePath = buildTargetFilePath(directoryPath);
       ResourceUtil.copyResourceToFile("gherkinlint-rules-sample.json", targetFilePath);
-      GherkinLintLogger.info("Sample file copied successfully to: " + targetFilePath);
+      GherkinLintLogger.info("Sample file copied successfully.");
       notifyUser("GherkinLint", "Sample file copied successfully", NotificationType.INFORMATION);
     } catch (IOException e) {
-      GherkinLintLogger.error("Failed to copy sample file: " + e.getMessage());
+      GherkinLintLogger.error("Failed to copy sample file.");
       notifyUser(
           "GherkinLint", "Failed to copy sample file: " + e.getMessage(), NotificationType.ERROR);
     }

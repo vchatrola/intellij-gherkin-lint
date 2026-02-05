@@ -4,6 +4,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.vchatrola.util.GherkinLintLogger;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public final class GherkinLintSettingsState
     implements PersistentStateComponent<GherkinLintSettingsState> {
   public boolean customLogicEnabled = false;
+  public boolean verboseLogging = false;
   public String customFilePath = "";
   public String copyDirectoryPath = "";
   public String geminiModel = "";
@@ -29,12 +31,14 @@ public final class GherkinLintSettingsState
   @Override
   public void loadState(GherkinLintSettingsState state) {
     this.customLogicEnabled = state.customLogicEnabled;
+    this.verboseLogging = state.verboseLogging;
     this.customFilePath = state.customFilePath;
     this.copyDirectoryPath = state.copyDirectoryPath;
     this.geminiModel = state.geminiModel;
     this.geminiModels =
         state.geminiModels != null ? new ArrayList<>(state.geminiModels) : new ArrayList<>();
     this.geminiModelsFetchedAt = state.geminiModelsFetchedAt;
+    GherkinLintLogger.setVerboseEnabled(this.verboseLogging);
   }
 
   public static GherkinLintSettingsState getInstance() {
@@ -64,5 +68,9 @@ public final class GherkinLintSettingsState
 
   public boolean isCustomLogicEnabled() {
     return customLogicEnabled;
+  }
+
+  public boolean isVerboseLogging() {
+    return verboseLogging;
   }
 }

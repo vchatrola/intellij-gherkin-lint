@@ -14,6 +14,10 @@ public class GherkinLintSettingsManager {
     return settingsState.customLogicEnabled;
   }
 
+  public boolean isVerboseLogging() {
+    return settingsState.verboseLogging;
+  }
+
   public String getCustomFilePath() {
     return settingsState.customFilePath;
   }
@@ -28,6 +32,10 @@ public class GherkinLintSettingsManager {
 
   public void setCustomLogicEnabled(boolean enabled) {
     settingsState.customLogicEnabled = enabled;
+  }
+
+  public void setVerboseLogging(boolean enabled) {
+    settingsState.verboseLogging = enabled;
   }
 
   public void setCustomFilePath(String path) {
