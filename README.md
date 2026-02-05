@@ -60,4 +60,4 @@ See `docs/DEVELOPER_GUIDE.md` for setup, run, test, formatting, verifier, and pu
 See `CONTRIBUTING.md` for workflow and expectations.
 
 ## License
-Licensed under the MIT License. See `LICENSE`.
+Licensed under the Apache License 2.0. See `LICENSE`.
