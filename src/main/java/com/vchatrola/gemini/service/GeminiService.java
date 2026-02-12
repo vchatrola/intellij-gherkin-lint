@@ -112,7 +112,34 @@ public class GeminiService {
     GeminiResponse response =
         getCompletionWithModel(
             model, new GeminiRequest(List.of(new Content(List.of(new TextPart(text))))));
-    return response.candidates().get(0).content().parts().get(0).text();
+    return extractResponseTextOrThrow(response);
+  }
+
+  private String extractResponseTextOrThrow(GeminiResponse response) {
+    if (response == null) {
+      throw new IllegalArgumentException("Gemini response is empty.");
+    }
+
+    if (response.candidates() == null || response.candidates().isEmpty()) {
+      throw new IllegalArgumentException("Gemini response did not include any candidates.");
+    }
+
+    GeminiResponse.Candidate candidate = response.candidates().get(0);
+    if (candidate == null || candidate.content() == null) {
+      throw new IllegalArgumentException("Gemini response candidate content is missing.");
+    }
+
+    if (candidate.content().parts() == null || candidate.content().parts().isEmpty()) {
+      throw new IllegalArgumentException("Gemini response candidate parts are missing.");
+    }
+
+    TextPart textPart = candidate.content().parts().get(0);
+    String textValue = textPart != null ? textPart.text() : null;
+    if (isBlank(textValue)) {
+      throw new IllegalArgumentException("Gemini response candidate text is empty.");
+    }
+
+    return textValue;
   }
 
   private static String normalizeModelName(String modelName) {
