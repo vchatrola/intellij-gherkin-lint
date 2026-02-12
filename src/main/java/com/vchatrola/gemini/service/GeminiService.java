@@ -124,7 +124,7 @@ public class GeminiService {
       throw new IllegalArgumentException("Gemini response did not include any candidates.");
     }
 
-    GeminiResponse.Candidate candidate = response.candidates().get(0);
+    GeminiResponse.Candidate candidate = response.candidates().getFirst();
     if (candidate == null || candidate.content() == null) {
       throw new IllegalArgumentException("Gemini response candidate content is missing.");
     }
@@ -133,7 +133,7 @@ public class GeminiService {
       throw new IllegalArgumentException("Gemini response candidate parts are missing.");
     }
 
-    TextPart textPart = candidate.content().parts().get(0);
+    TextPart textPart = candidate.content().parts().getFirst();
     String textValue = textPart != null ? textPart.text() : null;
     if (isBlank(textValue)) {
       throw new IllegalArgumentException("Gemini response candidate text is empty.");
@@ -185,7 +185,7 @@ public class GeminiService {
     if (available.isEmpty()) {
       throw new IllegalStateException("No Gemini models available from API.");
     }
-    String resolved = available.get(0);
+    String resolved = available.getFirst();
     GherkinLintLogger.debugVerbose("Using Gemini model (auto): " + resolved);
     return resolved;
   }
